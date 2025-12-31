@@ -6,27 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXContainerItemProxy section */
-		990D8BAB2EBBBEF70030F3B1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 990D8B952EBBBEF50030F3B1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 990D8B9C2EBBBEF50030F3B1;
-			remoteInfo = "media renamer2.0";
-		};
-		990D8BB52EBBBEF70030F3B1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 990D8B952EBBBEF50030F3B1 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 990D8B9C2EBBBEF50030F3B1;
-			remoteInfo = "media renamer2.0";
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		990D8B9D2EBBBEF50030F3B1 /* Regia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Regia.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		990D8BAA2EBBBEF70030F3B1 /* RegiaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RegiaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		990D8BB42EBBBEF70030F3B1 /* RegiaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RegiaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		990D8BD62EBBC1350030F3B1 /* FoundationModels.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FoundationModels.framework; path = System/Library/Frameworks/FoundationModels.framework; sourceTree = SDKROOT; };
 		990D8BED2EBBD2BB0030F3B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -37,34 +18,10 @@
 			path = "media renamer2.0";
 			sourceTree = "<group>";
 		};
-		990D8BAD2EBBBEF70030F3B1 /* media renamer2.0Tests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "media renamer2.0Tests";
-			sourceTree = "<group>";
-		};
-		990D8BB72EBBBEF70030F3B1 /* media renamer2.0UITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "media renamer2.0UITests";
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		990D8B9A2EBBBEF50030F3B1 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		990D8BA72EBBBEF70030F3B1 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		990D8BB12EBBBEF70030F3B1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -78,8 +35,6 @@
 			isa = PBXGroup;
 			children = (
 				990D8B9F2EBBBEF50030F3B1 /* media renamer2.0 */,
-				990D8BAD2EBBBEF70030F3B1 /* media renamer2.0Tests */,
-				990D8BB72EBBBEF70030F3B1 /* media renamer2.0UITests */,
 				990D8BD52EBBC1350030F3B1 /* Frameworks */,
 				990D8B9E2EBBBEF50030F3B1 /* Products */,
 			);
@@ -89,8 +44,6 @@
 			isa = PBXGroup;
 			children = (
 				990D8B9D2EBBBEF50030F3B1 /* Regia.app */,
-				990D8BAA2EBBBEF70030F3B1 /* RegiaTests.xctest */,
-				990D8BB42EBBBEF70030F3B1 /* RegiaUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -129,52 +82,6 @@
 			productReference = 990D8B9D2EBBBEF50030F3B1 /* Regia.app */;
 			productType = "com.apple.product-type.application";
 		};
-		990D8BA92EBBBEF70030F3B1 /* RegiaTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 990D8BC12EBBBEF70030F3B1 /* Build configuration list for PBXNativeTarget "RegiaTests" */;
-			buildPhases = (
-				990D8BA62EBBBEF70030F3B1 /* Sources */,
-				990D8BA72EBBBEF70030F3B1 /* Frameworks */,
-				990D8BA82EBBBEF70030F3B1 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				990D8BAC2EBBBEF70030F3B1 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				990D8BAD2EBBBEF70030F3B1 /* media renamer2.0Tests */,
-			);
-			name = RegiaTests;
-			packageProductDependencies = (
-			);
-			productName = "media renamer2.0Tests";
-			productReference = 990D8BAA2EBBBEF70030F3B1 /* RegiaTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		990D8BB32EBBBEF70030F3B1 /* RegiaUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 990D8BC42EBBBEF70030F3B1 /* Build configuration list for PBXNativeTarget "RegiaUITests" */;
-			buildPhases = (
-				990D8BB02EBBBEF70030F3B1 /* Sources */,
-				990D8BB12EBBBEF70030F3B1 /* Frameworks */,
-				990D8BB22EBBBEF70030F3B1 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				990D8BB62EBBBEF70030F3B1 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				990D8BB72EBBBEF70030F3B1 /* media renamer2.0UITests */,
-			);
-			name = RegiaUITests;
-			packageProductDependencies = (
-			);
-			productName = "media renamer2.0UITests";
-			productReference = 990D8BB42EBBBEF70030F3B1 /* RegiaUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -187,14 +94,6 @@
 				TargetAttributes = {
 					990D8B9C2EBBBEF50030F3B1 = {
 						CreatedOnToolsVersion = 26.1;
-					};
-					990D8BA92EBBBEF70030F3B1 = {
-						CreatedOnToolsVersion = 26.1;
-						TestTargetID = 990D8B9C2EBBBEF50030F3B1;
-					};
-					990D8BB32EBBBEF70030F3B1 = {
-						CreatedOnToolsVersion = 26.1;
-						TestTargetID = 990D8B9C2EBBBEF50030F3B1;
 					};
 				};
 			};
@@ -213,28 +112,12 @@
 			projectRoot = "";
 			targets = (
 				990D8B9C2EBBBEF50030F3B1 /* Regia */,
-				990D8BA92EBBBEF70030F3B1 /* RegiaTests */,
-				990D8BB32EBBBEF70030F3B1 /* RegiaUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		990D8B9B2EBBBEF50030F3B1 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		990D8BA82EBBBEF70030F3B1 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		990D8BB22EBBBEF70030F3B1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -251,34 +134,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		990D8BA62EBBBEF70030F3B1 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		990D8BB02EBBBEF70030F3B1 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		990D8BAC2EBBBEF70030F3B1 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 990D8B9C2EBBBEF50030F3B1 /* Regia */;
-			targetProxy = 990D8BAB2EBBBEF70030F3B1 /* PBXContainerItemProxy */;
-		};
-		990D8BB62EBBBEF70030F3B1 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 990D8B9C2EBBBEF50030F3B1 /* Regia */;
-			targetProxy = 990D8BB52EBBBEF70030F3B1 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		990D8BBC2EBBBEF70030F3B1 /* Debug */ = {
@@ -475,86 +331,6 @@
 			};
 			name = Release;
 		};
-		990D8BC22EBBBEF70030F3B1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gionnio.media-renamer2-0Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Regia.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Regia";
-			};
-			name = Debug;
-		};
-		990D8BC32EBBBEF70030F3B1 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gionnio.media-renamer2-0Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Regia.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Regia";
-			};
-			name = Release;
-		};
-		990D8BC52EBBBEF70030F3B1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gionnio.media-renamer2-0UITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "media renamer2.0";
-			};
-			name = Debug;
-		};
-		990D8BC62EBBBEF70030F3B1 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gionnio.media-renamer2-0UITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = "media renamer2.0";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -572,24 +348,6 @@
 			buildConfigurations = (
 				990D8BBF2EBBBEF70030F3B1 /* Debug */,
 				990D8BC02EBBBEF70030F3B1 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		990D8BC12EBBBEF70030F3B1 /* Build configuration list for PBXNativeTarget "RegiaTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				990D8BC22EBBBEF70030F3B1 /* Debug */,
-				990D8BC32EBBBEF70030F3B1 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		990D8BC42EBBBEF70030F3B1 /* Build configuration list for PBXNativeTarget "RegiaUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				990D8BC52EBBBEF70030F3B1 /* Debug */,
-				990D8BC62EBBBEF70030F3B1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
