@@ -1,5 +1,12 @@
 # Regia 🎬
 
+![Swift](https://img.shields.io/badge/swift-F54A2A?style=for-the-badge&logo=swift&logoColor=white)
+![Platform](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
+![Xcode](https://img.shields.io/badge/Xcode-007ACC?style=for-the-badge&logo=xcode&logoColor=white)
+![License](https://img.shields.io/github/license/gionnio/Regia.app?style=for-the-badge)
+![Downloads](https://img.shields.io/github/downloads/gionnio/Regia.app/total?style=for-the-badge&color=success)
+![AI](https://img.shields.io/badge/AI-Assisted-blueviolet?style=for-the-badge&logo=openai&logoColor=white)
+
 **Regia** is a native macOS application developed in SwiftUI to automatically organize, rename, and move video files (Movies and TV Series).
 
 <img width="1212" height="864" alt="Screenshot 2025-12-31 alle 14 52 20" src="https://github.com/user-attachments/assets/b0250c3e-a255-4a9f-91ee-ac4faf035e79" />
