@@ -1,0 +1,21 @@
+# Xcode
+.DS_Store
+*/build/
+*.os
+*.lpdf
+*.derivedData
+*.xcuserstate
+*.xcuserdata/
+*.xccheckout
+*.moved-aside
+*.pro
+*.essentials
+
+# Swift Package Manager
+.build/
+
+# Altro
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM

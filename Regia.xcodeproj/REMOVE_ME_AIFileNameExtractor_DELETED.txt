@@ -1,0 +1,2 @@
+AIFileNameExtractor.swift has been removed from the project.
+All references to this file have been cleaned up.
