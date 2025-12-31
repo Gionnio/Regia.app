@@ -4,6 +4,7 @@
 ![Platform](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 ![Xcode](https://img.shields.io/badge/Xcode-007ACC?style=for-the-badge&logo=xcode&logoColor=white)
 ![License](https://img.shields.io/github/license/gionnio/Regia.app?style=for-the-badge)
+![Views](https://komarev.com/ghpvc/?username=gionnio-Regia&style=for-the-badge&label=VIEWS&color=7F00FF)
 ![Downloads](https://img.shields.io/github/downloads/gionnio/Regia.app/total?style=for-the-badge&color=success)
 ![AI](https://img.shields.io/badge/AI-Assisted-blueviolet?style=for-the-badge&logo=openai&logoColor=white)
 
