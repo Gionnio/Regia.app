@@ -2,9 +2,9 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.3a (Strict Wall Fix)
-//  Target: macOS 26.0+ (Mocked compatibility)
-//  Description: Implements "Strict Wall" logic in Regex fallback to match AI behavior.
+//  Version: 1.1
+//  Target: macOS 26.0+
+//  Description: Implements "Strict Wall" logic in Regex fallback
 //
 
 import SwiftUI
