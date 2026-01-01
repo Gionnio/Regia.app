@@ -474,7 +474,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     }
 
     func requestProcessing() {
-        guard let baseURL = selectedFolderURL else { statusText = t("err_no_folder"); return }
+        guard selectedFolderURL != nil else { statusText = t("err_no_folder"); return }
         checkForAmbiguities()
         if let blocking = ambiguousMatches.first(where: { m in m.fileIndices.contains { fileList[$0].isSelected } }) {
             pendingProcessAfterDisambiguation = true; currentAmbiguity = blocking; statusText = t("err_ambiguous"); return
