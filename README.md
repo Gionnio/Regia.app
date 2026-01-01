@@ -53,6 +53,16 @@ Since this is an open-source project and not signed with a paid Apple Developer 
 ## Privacy & Security
 This application runs locally on your device. API Keys and file information are processed on your Mac and are never sent to external servers other than the official TMDB API for metadata retrieval.
 
+## 🚧 Roadmap
+
+Leveraging the new **Foundation Models framework** introduced in macOS 26, Regia is evolving to become smarter and completely Regex-free.
+
+- [ ] **Semantic Filename Parsing:** Replace current regex logic with Apple's **on-device Foundation Model**. By using the new Swift APIs, Regia will "read" messy filenames semantically to extract titles and years with human-like understanding, even for complex edge cases.
+- [ ] **Privacy-First Intelligence:** All AI processing will happen locally using the Neural Engine, ensuring zero data leaves your Mac, consistent with the Apple Intelligence privacy promise.
+- [ ] **Smart Folder Watcher:** A background agent monitoring the "Downloads" folder to auto-suggest renaming actions.
+- [ ] **Subtitle Auto-Match:** Automatically detect and rename orphan `.srt` files to match video filenames.
+- [ ] **Siri Intents:** "Siri, organize the movies in this folder with Regia."
+
 ## 🤖 AI Acknowledgment
 This application was developed with the assistance of Artificial Intelligence for code generation, logic optimization, and problem-solving.
 
