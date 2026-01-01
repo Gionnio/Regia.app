@@ -61,7 +61,6 @@ Leveraging the new **Foundation Models framework** introduced in macOS 26, Regia
 - [ ] **Privacy-First Intelligence:** All AI processing will happen locally using the Neural Engine, ensuring zero data leaves your Mac, consistent with the Apple Intelligence privacy promise.
 - [ ] **Smart Folder Watcher:** A background agent monitoring the "Downloads" folder to auto-suggest renaming actions.
 - [ ] **Subtitle Auto-Match:** Automatically detect and rename orphan `.srt` files to match video filenames.
-- [ ] **Siri Intents:** "Siri, organize the movies in this folder with Regia."
 
 ## 🤖 AI Acknowledgment
 This application was developed with the assistance of Artificial Intelligence for code generation, logic optimization, and problem-solving.
