@@ -8,33 +8,50 @@
 ![Downloads](https://img.shields.io/github/downloads/gionnio/Regia.app/total?style=for-the-badge&color=success)
 ![AI](https://img.shields.io/badge/AI-Assisted-blueviolet?style=for-the-badge&logo=openai&logoColor=white)
 
-**Regia** is a native macOS application developed in SwiftUI to automatically organize, rename, and move video files (Movies and TV Series).
+**Regia** is a native macOS application developed in SwiftUI designed to help users manage, organize, and rename their personal video library files efficiently using official metadata.
 
-<img width="1212" height="864" alt="Screenshot 2025-12-31 alle 14 52 20" src="https://github.com/user-attachments/assets/b0250c3e-a255-4a9f-91ee-ac4faf035e79" />
+<img width="1212" alt="Regia Main Interface" src="https://github.com/user-attachments/assets/b0250c3e-a255-4a9f-91ee-ac4faf035e79" />
 
 ## ✨ Features
-- **Smart Anchor Logic:** Recognizes the title based on the year or season, automatically removing useless tags (e.g., 1080p, H265, HEVC).
-- **TMDB Integration:** Downloads accurate metadata (Official titles, Correct years).
-- **TV Series Ready:** Automatic recognition of `SxxExx` and `Exxx` patterns.
-- **Plex Friendly:** Option to move files into an ordered folder structure (`Series Name/Season X/Episode`).
-- **Disambiguation:** Interface to manually choose the correct title in case of homonyms.
-- **Undo:** Ability to undo the last rename/move operation.
+- **Smart Anchor Logic:** Intelligently identifies the movie or show title by detecting the year or season, cleaning up inconsistent filenames automatically.
+- **Metadata Integration:** Connects to TMDB to retrieve official titles and release years for accurate cataloging.
+- **TV Series Support:** Native recognition of standard season/episode numbering patterns (`SxxExx`).
+- **Structured Organization:** Optional feature to move files into a standardized folder hierarchy (`Series Name/Season X/Episode`), compatible with most media center software (e.g., Plex, Emby).
+- **Disambiguazione:** User interface to manually select the correct match when multiple titles are found.
+- **Undo Capability:** Safety feature to revert the last rename or move operation instantly.
 - **Multi-language:** Native support for Italian 🇮🇹 and English 🇬🇧.
 
-<img width="1212" height="864" alt="Screenshot 2025-12-31 alle 14 52 00" src="https://github.com/user-attachments/assets/077a0031-eade-4af8-a09d-4419e47a0340" />
+<img width="1212" alt="Regia Settings and List" src="https://github.com/user-attachments/assets/077a0031-eade-4af8-a09d-4419e47a0340" />
 
 ## 🚀 Requirements
 - macOS 14.0 (Sonoma) or later.
-- TMDB API Key (Free) required for operation.
+- A personal TMDB API Key (Free) is required to fetch metadata.
 
-## 🛠 Setup
-1. Download the project or the latest release.
+## 📥 Installation (Pre-built App)
+If you don't want to compile the code yourself using Xcode, you can download the ready-to-use app:
+
+1. Go to the **[Releases](../../releases)** section on the right sidebar of this page.
+2. Download the latest `.zip` file (e.g., `Regia_v1.0.zip`).
+3. Unzip the file and move `Regia.app` to your **Applications** folder.
+
+### ⚠️ Important: How to open the app
+Since this is an open-source project and not signed with a paid Apple Developer ID, macOS might block the first launch with a security warning ("App cannot be opened because the developer cannot be verified").
+
+**To open it:**
+1. **Right-click** (or Control+Click) on the `Regia` icon.
+2. Select **Open** from the context menu.
+3. Click **Open** in the dialog box that appears.
+
+*You only need to do this once. Subsequent launches will work normally.*
+
+## 🛠 Build from Source
+1. Clone the repository or download the source code.
 2. Open `Regia.xcodeproj` with Xcode.
-3. Run the app.
+3. Run the app (Cmd+R).
 4. Go to the **Settings** tab and enter your TMDB API Key.
 
-## Privacy
-API Keys are saved locally on the user's device and are never shared.
+## Privacy & Security
+This application runs locally on your device. API Keys and file information are processed on your Mac and are never sent to external servers other than the official TMDB API for metadata retrieval.
 
 ## 🤖 AI Acknowledgment
 This application was developed with the assistance of Artificial Intelligence for code generation, logic optimization, and problem-solving.
