@@ -17,7 +17,7 @@
 - **Metadata Integration:** Connects to TMDB to retrieve official titles and release years for accurate cataloging.
 - **TV Series Support:** Native recognition of standard season/episode numbering patterns (`SxxExx`).
 - **Structured Organization:** Optional feature to move files into a standardized folder hierarchy (`Series Name/Season X/Episode`), compatible with most media center software (e.g., Plex, Emby).
-- **Disambiguazione:** User interface to manually select the correct match when multiple titles are found.
+- **Disambiguation:** User interface to manually select the correct match when multiple titles are found.
 - **Undo Capability:** Safety feature to revert the last rename or move operation instantly.
 - **Multi-language:** Native support for Italian 🇮🇹 and English 🇬🇧.
 
@@ -31,7 +31,7 @@
 If you don't want to compile the code yourself using Xcode, you can download the ready-to-use app:
 
 1. Go to the **[Releases](../../releases)** section on the right sidebar of this page.
-2. Download the latest `.zip` file (e.g., `Regia_v1.0.zip`).
+2. Download the latest `.zip` file (e.g., `Regia_v1.2.zip`).
 3. Unzip the file and move `Regia.app` to your **Applications** folder.
 
 ### ⚠️ Important: How to open the app
@@ -49,6 +49,14 @@ Since this is an open-source project and not signed with a paid Apple Developer 
 2. Open `Regia.xcodeproj` with Xcode.
 3. Run the app (Cmd+R).
 4. Go to the **Settings** tab and enter your TMDB API Key.
+
+## 🚧 Roadmap & TODO
+
+I'm constantly working to improve Regia. Here are the features planned for upcoming releases:
+
+- [ ] **System Notifications:** Implement native macOS notifications upon processing completion, useful for alerting the user when long background tasks are finished.
+- [ ] **Custom Renaming Format:** Introduce a custom pattern editor (e.g., `{title} - [{year}]`) to allow users to create renaming styles beyond presets.
+- [ ] **UI Refinement:** General user interface improvements (padding, icons, visual feedback) to align even closer with the native macOS design language.
 
 ## Privacy & Security
 This application runs locally on your device. API Keys and file information are processed on your Mac and are never sent to external servers other than the official TMDB API for metadata retrieval.
