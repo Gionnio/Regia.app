@@ -2,62 +2,19 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.1 (Stable - Clean)
-//  Target: macOS 26.0+
-//  Description: Native media organizer with strict filename parsing logic.
+//  Version: 1.2 Stable
+//  Target: macOS 12.0+
+//  Description: Fast, lightweight, deterministic renaming using strict regex rules.
 //
 
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
-import NaturalLanguage
 
-// MARK: - AI Compatibility Layer
-
-#if canImport(FoundationModels)
-import FoundationModels
-@Generable
-struct MediaMetadata {
-    @Guide(description: "The official title") let title: String
-    @Guide(description: "The release year") let year: String?
-    @Guide(description: "Is TV Show") let isTVShow: Bool
-    @Guide(description: "Season") let season: String?
-    @Guide(description: "Episode") let episode: String?
-}
-actor SemanticParser {
-    private var session: LanguageModelSession?
-    init() { Task { await prepareSession() } }
-    private func prepareSession() async {
-        guard SystemLanguageModel.default.availability == .available else { return }
-        // Professional System Prompt
-        let instructions = """
-        You are an expert media library assistant.
-        Analyze filename strings. Ignore technical video tags (1080p, HEVC, H265).
-        Extract clean Title, Year, and TV details.
-        """
-        self.session = LanguageModelSession(instructions: instructions)
-    }
-    func parse(_ filename: String) async -> MediaMetadata? {
-        guard let session = session else { return nil }
-        do {
-            let response = try await session.respond(to: "Analyze: \(filename)", generating: MediaMetadata.self)
-            return response.content
-        } catch { return nil }
-    }
-}
-#else
-// MOCK AI (Current Xcode Compatibility)
-struct MediaMetadata { let title: String; let year: String?; let isTVShow: Bool; let season: String?; let episode: String? }
-actor SemanticParser {
-    func parse(_ filename: String) async -> MediaMetadata? { return nil } // Fallback to Regex
-}
-#endif
-
-// MARK: - Localization & Languages
+// MARK: - Localizzazione
 
 enum AppLanguage: String, CaseIterable, Identifiable {
-    case italian = "Italiano"
-    case english = "English"
+    case italian = "Italiano"; case english = "English"
     var id: String { self.rawValue }
     var apiCode: String { self == .italian ? "it" : "en" }
 }
@@ -72,9 +29,8 @@ struct Strings {
             "status_manual": [.italian: "Pronto (Manuale)", .english: "Ready (Manual)"],
             "status_moved": [.italian: "Spostato!", .english: "Moved!"],
             "status_restored": [.italian: "Ripristinato", .english: "Restored"],
-            "status_error_move": [.italian: "Errore Spostamento", .english: "Move Error"],
+            "status_error_move": [.italian: "Errore File", .english: "File Error"],
             "status_error_net": [.italian: "Errore Rete", .english: "Network Error"],
-            "status_error_parse": [.italian: "Errore Parsing", .english: "Parsing Error"],
             "msg_ready": [.italian: "Trascina qui file o cartelle.", .english: "Drag files here."],
             "msg_adding": [.italian: "Analisi in corso...", .english: "Analyzing..."],
             "msg_added": [.italian: "File aggiunti.", .english: "Files added."],
@@ -82,7 +38,7 @@ struct Strings {
             "msg_no_files": [.italian: "Nessun file video.", .english: "No video files."],
             "msg_scan_done": [.italian: "Scansione completata.", .english: "Scan completed."],
             "msg_cleaned": [.italian: "Lista svuotata.", .english: "List cleared."],
-            "msg_searching": [.italian: "Recupero metadati...", .english: "Fetching metadata..."],
+            "msg_searching": [.italian: "Ricerca TMDB...", .english: "Searching TMDB..."],
             "msg_search_done": [.italian: "Ricerca completata.", .english: "Search completed."],
             "msg_processing": [.italian: "Elaborazione...", .english: "Processing..."],
             "msg_done": [.italian: "Tutto fatto!", .english: "All done!"],
@@ -90,7 +46,7 @@ struct Strings {
             "msg_undo_done": [.italian: "Ripristinati:", .english: "Restored:"],
             "msg_manual_search": [.italian: "Cerca:", .english: "Search:"],
             "err_no_folder": [.italian: "Nessuna cartella.", .english: "No folder."],
-            "err_no_api": [.italian: "Manca API Key TMDB.", .english: "Missing TMDB API Key."],
+            "err_no_api": [.italian: "Manca API Key.", .english: "Missing API Key."],
             "err_no_ready": [.italian: "Nessun file pronto.", .english: "No files ready."],
             "err_ambiguous": [.italian: "Risolvi ambiguità.", .english: "Resolve ambiguities."],
             "col_original": [.italian: "File Originale", .english: "Original File"],
@@ -104,43 +60,38 @@ struct Strings {
             "sec_language": [.italian: "Lingua", .english: "Language"],
             "lbl_format": [.italian: "Formato", .english: "Format"],
             "lbl_subfolders": [.italian: "Includi sottocartelle", .english: "Include subfolders"],
-            "lbl_move": [.italian: "Sposta in cartelle (Plex)", .english: "Move to folders (Plex)"],
+            "lbl_move": [.italian: "Sposta in cartelle", .english: "Move to folders"],
             "lbl_lang": [.italian: "Lingua", .english: "Language"],
             "btn_search": [.italian: "Cerca", .english: "Search"],
             "btn_done": [.italian: "Fatto", .english: "Done"],
             "alert_confirm_title": [.italian: "Conferma", .english: "Confirm"],
-            "alert_confirm_msg": [.italian: "Procedere con la rinomina dei file selezionati?", .english: "Proceed with renaming selected files?"],
+            "alert_confirm_msg": [.italian: "Procedere?", .english: "Proceed?"],
             "alert_manual_title": [.italian: "Manuale", .english: "Manual"],
             "btn_process": [.italian: "Elabora", .english: "Process"],
-            "tip_open": [.italian: "Scegli cartella di origine", .english: "Choose source folder"],
-            "tip_scan": [.italian: "Scansiona di nuovo la cartella", .english: "Rescan folder"],
-            "tip_reset": [.italian: "Svuota la lista e ricomincia", .english: "Clear list and restart"],
-            "tip_undo": [.italian: "Annulla l'ultima operazione", .english: "Undo last operation"],
-            "tip_tmdb": [.italian: "Cerca un titolo manualmente su TMDB", .english: "Search TMDB manually"],
-            "tip_process": [.italian: "Applica le rinomine ai file", .english: "Apply renames to files"],
-            "tip_settings": [.italian: "Apri le preferenze", .english: "Open preferences"],
-            "tip_ai": [.italian: "Analizzato con Apple Intelligence", .english: "Analyzed with Apple Intelligence"],
-            "tip_sel_all": [.italian: "Seleziona tutto", .english: "Select all"],
-            "tip_desel_all": [.italian: "Deseleziona tutto", .english: "Deselect all"],
-            "tip_filter": [.italian: "Filtra non trovati", .english: "Filter not found"]
+            "tip_open": [.italian: "Scegli cartella", .english: "Open folder"],
+            "tip_scan": [.italian: "Scansiona", .english: "Scan"],
+            "tip_reset": [.italian: "Reset", .english: "Reset"],
+            "tip_undo": [.italian: "Annulla", .english: "Undo"],
+            "tip_tmdb": [.italian: "Cerca manuale", .english: "Manual Search"],
+            "tip_process": [.italian: "Applica", .english: "Apply"],
+            "tip_settings": [.italian: "Impostazioni", .english: "Settings"],
+            "tip_sel_all": [.italian: "Tutti", .english: "All"],
+            "tip_desel_all": [.italian: "Nessuno", .english: "None"],
+            "tip_filter": [.italian: "Filtra", .english: "Filter"]
         ]
         return dict[key]?[lang] ?? key
     }
 }
 
-// MARK: - Data Models
+// MARK: - Models
 
 struct DisambiguationCandidate: Identifiable { let id: String; let title: String; let year: String; let date: String }
 struct AmbiguousMatch: Identifiable { let id = UUID(); let fileIndices: [Int]; let candidates: [DisambiguationCandidate]; let isTV: Bool }
 struct RenameHistoryItem { let originalURL: URL; let newURL: URL; let fileID: UUID }
 
 enum RenameFormat: String, CaseIterable, Identifiable {
-    case standard = "standard"
-    case compact = "compact" // Renamed from "scene" for neutrality
-    case plex = "plex"
-    
+    case standard = "standard"; case compact = "compact"; case plex = "plex"
     var id: String { self.rawValue }
-    
     func label(for lang: AppLanguage) -> String {
         switch self {
         case .standard: return lang == .italian ? "Titolo (Anno)" : "Title (Year)"
@@ -173,7 +124,7 @@ enum FileStatus {
         case .ripristinato: return Strings.get("status_restored", lang: lang)
         case .erroreSpostamento: return Strings.get("status_error_move", lang: lang)
         case .erroreRete: return Strings.get("status_error_net", lang: lang)
-        case .erroreRegex: return Strings.get("status_error_parse", lang: lang)
+        case .erroreRegex: return "Error"
         }
     }
 }
@@ -182,7 +133,7 @@ final class MediaFile: ObservableObject, Identifiable {
     let id = UUID(); let originalURL: URL; let originalName: String
     @Published var proposedName: String; @Published var isSelected: Bool
     @Published var status: FileStatus; @Published var isTVShow: Bool; @Published var tmdbID: String = ""
-    @Published var isAI: Bool = false
+    // isAI rimosso: ora è tutto Regex
     var parsedSeason: String?; var parsedEpisode: String?
     @Published var ambiguousCandidates: [DisambiguationCandidate]? = nil
 
@@ -194,27 +145,26 @@ final class MediaFile: ObservableObject, Identifiable {
     }
 }
 
-// MARK: - Logic Utils (STRICT PARSING)
+// MARK: - THE "STRICT WALL" REGEX LOGIC (Il Cuore dell'App)
 
 func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: Bool) {
     let nsString = raw as NSString
     let nameWithoutExt = nsString.deletingPathExtension
     let clean = nameWithoutExt.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ")
     
-    // Pattern TV: Detect Season/Episode anchor
+    // Pattern TV: Muro SxxExx
     let tvPattern = try! NSRegularExpression(pattern: #"(?i)\b(s\d{1,2}e\d{1,3}|\d{1,2}x\d{1,3})\b"#)
     let range = NSRange(clean.startIndex..., in: clean)
     
+    // Se trova SxxExx, taglia tutto quello che c'è dopo
     if let match = tvPattern.firstMatch(in: clean, options: [], range: range),
        let tRange = Range(match.range, in: clean) {
-        // Strict Wall: Ignore everything after SxxExx
         let rawTitle = String(clean[..<tRange.lowerBound])
         let cleanTitle = cleanupTitleString(rawTitle)
-        print("📺 TV DETECTED (Wall Logic): '\(cleanTitle)' from '\(raw)'")
         return (cleanTitle, nil, true)
     }
     
-    // Fallback: Detect Year anchor
+    // Fallback: Anno
     let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
     if let match = yearPattern.firstMatch(in: clean, options: [], range: range),
        let yRange = Range(match.range, in: clean) {
@@ -258,6 +208,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     @Published var isShowingRetryAlert = false; @Published var retrySearchName = ""
     @Published var targetFileForManualSearch: MediaFile? = nil
     @Published var showConfirmationAlert = false
+    @Published var showSettingsSheet = false
     
     @AppStorage("tmdbApiKey") var apiKey: String = ""
     @AppStorage("includeSubfolders") var includeSubfolders = true
@@ -270,9 +221,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     @Published var ambiguousMatches: [AmbiguousMatch] = []
     @Published var currentAmbiguity: AmbiguousMatch? = nil
     @Published var pendingProcessAfterDisambiguation = false
-    @Published var showSettingsSheet = false
     
-    private let semanticParser = SemanticParser()
     private let videoExtensions = ["mkv", "mp4", "avi", "mov", "m4v"]
     let episodeRegex = try! NSRegularExpression(pattern: #"(?i)(?:s|stagione|^)[.\s]*(\d{1,2})[.\s]*(?:e|ep|episodio|x|-)[.\s]*(\d{1,3})|(\d{1,2})x(\d{1,3})"#, options: [])
     let absoluteEpRegex = try! NSRegularExpression(pattern: #"(?i)(?:^|[\s_\-\[])(?:e|ep|episodio)[.\s]*(\d{2,4})(?:[\s_\-\]]|$)"#, options: [])
@@ -281,7 +230,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     func t(_ key: String) -> String { return Strings.get(key, lang: appLanguage) }
     func updateStatusReady() { self.statusText = t("msg_ready") }
 
-    // Parsing Episodes
+    // Estrazione numerica episodi (per formattare 05 invece di 5)
     func parseEpisodeInfo(from name: String) -> (isTV: Bool, season: String?, episode: String?) {
         let ns = NSRange(name.startIndex..., in: name)
         if let m = episodeRegex.firstMatch(in: name, range: ns) {
@@ -357,21 +306,13 @@ final class MediaOrganizerViewModel: ObservableObject {
         await MainActor.run { isScanning = false; statusText = self.t("msg_search_done"); checkForAmbiguities(); if !ambiguousMatches.isEmpty { currentAmbiguity = ambiguousMatches.first } }
     }
     
+    // LOGICA REGEX PURA
     func searchName(for file: MediaFile, overrideQuery: String? = nil, year: String? = nil) async {
         var query = ""; var yearToUse: String? = nil; var isTV = file.isTVShow
         
         if let q = overrideQuery, !q.isEmpty {
             query = q
-        }
-        else if let metadata = await semanticParser.parse(file.originalName) {
-            query = metadata.title; yearToUse = metadata.year
-            await MainActor.run { file.isAI = true }
-            if metadata.isTVShow {
-                isTV = true
-                await MainActor.run { file.isTVShow = true; file.parsedSeason = metadata.season; file.parsedEpisode = metadata.episode }
-            }
-        }
-        else {
+        } else {
             let cleaned = cleanFileNameRegex(file.originalName)
             query = cleaned.title
             yearToUse = cleaned.year
@@ -433,9 +374,7 @@ final class MediaOrganizerViewModel: ObservableObject {
             else { finalName = "\(title) (\(year)) {tmdb-\(id)}" }
         }
         if file.isTVShow, let s = file.parsedSeason, let e = file.parsedEpisode {
-            let paddedS = Int(s).map { String(format: "%02d", $0) } ?? s
-            let paddedE = Int(e).map { String(format: "%02d", $0) } ?? e
-            finalName += (renameFormat == .compact ? "." : " ") + "S\(paddedS)E\(paddedE)"
+            finalName += (renameFormat == .compact ? "." : " ") + "S\(s)E\(e)"
         }
         file.proposedName = sanitizeFileName(finalName)
         file.status = .pronto; file.isSelected = true; file.ambiguousCandidates = nil
@@ -502,8 +441,10 @@ final class MediaOrganizerViewModel: ObservableObject {
                             if let match = regex.firstMatch(in: newName, range: NSRange(newName.startIndex..., in: newName)),
                                let seriesRange = Range(match.range(at: 1), in: newName), let seasonRange = Range(match.range(at: 2), in: newName) {
                                 let series = String(newName[seriesRange]); let seasonNum = String(newName[seasonRange].dropFirst())
+                                
                                 var rootName = series
                                 if renameFormat == .plex && !file.tmdbID.isEmpty { rootName += " {tmdb-\(file.tmdbID)}" }
+                                
                                 let root = sanitizeFileName(rootName)
                                 folder = baseURL.appendingPathComponent(root).appendingPathComponent("Season \(seasonNum)", isDirectory: true)
                             } else { folder = baseURL.appendingPathComponent(sanitizeFileName(newName)) }
@@ -581,8 +522,7 @@ struct ContentView: View {
                         Button {
                             vm.selectedFolderURL = nil; let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false
                             panel.begin { if $0 == .OK { vm.selectedFolderURL = panel.url; vm.scanFolder() } }
-                        } label: { Label(vm.t("btn_open"), systemImage: "folder") }
-                        .disabled(vm.isScanning).help(vm.t("tip_open"))
+                        } label: { Label(vm.t("btn_open"), systemImage: "folder") }.disabled(vm.isScanning).help(vm.t("tip_open"))
                         if let url = vm.selectedFolderURL { Text(url.lastPathComponent).font(.caption).foregroundColor(.secondary).padding(.leading, 4) }
                     }
                     Button { vm.scanFolder() } label: { Image(systemName: "magnifyingglass") }.disabled(vm.selectedFolderURL == nil || vm.isScanning).help(vm.t("tip_scan"))
@@ -660,7 +600,6 @@ struct FileRowView: View {
     var body: some View {
         HStack {
             Toggle("", isOn: $file.isSelected).toggleStyle(.checkbox).frame(width: 30)
-            if file.isAI { Image(systemName: "sparkles").foregroundColor(.purple).help(vm.t("tip_ai")) }
             Text(file.originalName).font(.caption).lineLimit(2).foregroundColor(color(for: file.status)).frame(maxWidth: .infinity, alignment: .leading)
             TextField("...", text: $file.proposedName).textFieldStyle(.roundedBorder).frame(maxWidth: .infinity)
             HStack {
