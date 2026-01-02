@@ -25,7 +25,7 @@
 
 ## 🚀 Requirements
 - macOS 14.0 (Sonoma) or later.
-- A personal ![TMDB API Key](https://developer.themoviedb.org/docs/getting-started) (Free) is required to fetch metadata.
+- A personal [TMDB API Key](https://developer.themoviedb.org/docs/getting-started) (Free) is required to fetch metadata.
 
 ## 📥 Installation (Pre-built App)
 If you don't want to compile the code yourself using Xcode, you can download the ready-to-use app:
