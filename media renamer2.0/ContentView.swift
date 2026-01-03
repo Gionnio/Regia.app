@@ -2,9 +2,9 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.2 Stable
+//  Version: 1.2.2 (Stable - Compiler Fix)
 //  Target: macOS 12.0+
-//  Description: Fast, lightweight, deterministic renaming using strict regex rules.
+//  Description: Fixed 'subscript' error by converting NSRange to String.Index correctly.
 //
 
 import SwiftUI
@@ -68,7 +68,7 @@ struct Strings {
             "alert_confirm_msg": [.italian: "Procedere?", .english: "Proceed?"],
             "alert_manual_title": [.italian: "Manuale", .english: "Manual"],
             "btn_process": [.italian: "Elabora", .english: "Process"],
-            "tip_open": [.italian: "Scegli cartella", .english: "Open folder"],
+            "tip_open": [.italian: "Apri cartella", .english: "Open folder"],
             "tip_scan": [.italian: "Scansiona", .english: "Scan"],
             "tip_reset": [.italian: "Reset", .english: "Reset"],
             "tip_undo": [.italian: "Annulla", .english: "Undo"],
@@ -133,7 +133,6 @@ final class MediaFile: ObservableObject, Identifiable {
     let id = UUID(); let originalURL: URL; let originalName: String
     @Published var proposedName: String; @Published var isSelected: Bool
     @Published var status: FileStatus; @Published var isTVShow: Bool; @Published var tmdbID: String = ""
-    // isAI rimosso: ora è tutto Regex
     var parsedSeason: String?; var parsedEpisode: String?
     @Published var ambiguousCandidates: [DisambiguationCandidate]? = nil
 
@@ -145,26 +144,25 @@ final class MediaFile: ObservableObject, Identifiable {
     }
 }
 
-// MARK: - THE "STRICT WALL" REGEX LOGIC (Il Cuore dell'App)
+// MARK: - LOGICA REGEX (Fixata per Swift String Index)
 
 func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: Bool) {
     let nsString = raw as NSString
     let nameWithoutExt = nsString.deletingPathExtension
+    // Primo passaggio: sostituisci punti e underscore con spazi
     let clean = nameWithoutExt.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ")
     
-    // Pattern TV: Muro SxxExx
+    // 1. PRIORITÀ ALTA: Muro SxxExx (Serie TV)
     let tvPattern = try! NSRegularExpression(pattern: #"(?i)\b(s\d{1,2}e\d{1,3}|\d{1,2}x\d{1,3})\b"#)
     let range = NSRange(clean.startIndex..., in: clean)
     
-    // Se trova SxxExx, taglia tutto quello che c'è dopo
     if let match = tvPattern.firstMatch(in: clean, options: [], range: range),
        let tRange = Range(match.range, in: clean) {
         let rawTitle = String(clean[..<tRange.lowerBound])
-        let cleanTitle = cleanupTitleString(rawTitle)
-        return (cleanTitle, nil, true)
+        return (cleanupTitleString(rawTitle), nil, true)
     }
     
-    // Fallback: Anno
+    // 2. PRIORITÀ MEDIA: Muro Anno (Film)
     let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
     if let match = yearPattern.firstMatch(in: clean, options: [], range: range),
        let yRange = Range(match.range, in: clean) {
@@ -173,6 +171,18 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         return (cleanupTitleString(titlePart), yearFound, false)
     }
     
+    // 3. PRIORITÀ BASSA: "Muro Spazzatura" (Per file senza anno ma con tag)
+    let junkPattern = try! NSRegularExpression(pattern: #"(?i)\b(1080p|720p|4k|2160p|bluray|web-dl|webrip|hdtv|h264|h265|hevc|x264|x265|ita|eng|multi|sub|repack|remux|ac3|aac|ddp)\b"#)
+    
+    // FIX COMPILAZIONE QUI SOTTO: Convertiamo match.range in Range<String.Index>
+    if let match = junkPattern.firstMatch(in: clean, options: [], range: range),
+       let junkRange = Range(match.range, in: clean) {
+        
+        let rawTitle = String(clean[..<junkRange.lowerBound])
+        return (cleanupTitleString(rawTitle), nil, false)
+    }
+    
+    // 4. FALLBACK TOTALE
     return (cleanupTitleString(clean), nil, false)
 }
 
@@ -230,7 +240,6 @@ final class MediaOrganizerViewModel: ObservableObject {
     func t(_ key: String) -> String { return Strings.get(key, lang: appLanguage) }
     func updateStatusReady() { self.statusText = t("msg_ready") }
 
-    // Estrazione numerica episodi (per formattare 05 invece di 5)
     func parseEpisodeInfo(from name: String) -> (isTV: Bool, season: String?, episode: String?) {
         let ns = NSRange(name.startIndex..., in: name)
         if let m = episodeRegex.firstMatch(in: name, range: ns) {
@@ -306,7 +315,6 @@ final class MediaOrganizerViewModel: ObservableObject {
         await MainActor.run { isScanning = false; statusText = self.t("msg_search_done"); checkForAmbiguities(); if !ambiguousMatches.isEmpty { currentAmbiguity = ambiguousMatches.first } }
     }
     
-    // LOGICA REGEX PURA
     func searchName(for file: MediaFile, overrideQuery: String? = nil, year: String? = nil) async {
         var query = ""; var yearToUse: String? = nil; var isTV = file.isTVShow
         
@@ -423,8 +431,24 @@ final class MediaOrganizerViewModel: ObservableObject {
         showConfirmationAlert = true
     }
 
+    func checkAndRequestPermission(for url: URL) {
+        let path = url.path
+        if !FileManager.default.isWritableFile(atPath: path) {
+            DispatchQueue.main.async {
+                let panel = NSOpenPanel()
+                panel.message = "Regia necessita del permesso di scrittura per questa cartella. Seleziona '\(url.lastPathComponent)'."
+                panel.prompt = "Concedi Accesso"
+                panel.canChooseDirectories = true
+                panel.canChooseFiles = false
+                panel.directoryURL = url
+                if panel.runModal() == .OK { _ = panel.url?.startAccessingSecurityScopedResource() }
+            }
+        }
+    }
+
     func executeProcessing() {
         guard let baseURL = selectedFolderURL else { return }
+        checkAndRequestPermission(for: baseURL)
         let toProcess = fileList.filter { $0.isSelected && !$0.proposedName.isEmpty }
         
         isProcessing = true; statusText = t("msg_processing"); progress = 0; undoHistory.removeAll()
@@ -441,10 +465,8 @@ final class MediaOrganizerViewModel: ObservableObject {
                             if let match = regex.firstMatch(in: newName, range: NSRange(newName.startIndex..., in: newName)),
                                let seriesRange = Range(match.range(at: 1), in: newName), let seasonRange = Range(match.range(at: 2), in: newName) {
                                 let series = String(newName[seriesRange]); let seasonNum = String(newName[seasonRange].dropFirst())
-                                
                                 var rootName = series
                                 if renameFormat == .plex && !file.tmdbID.isEmpty { rootName += " {tmdb-\(file.tmdbID)}" }
-                                
                                 let root = sanitizeFileName(rootName)
                                 folder = baseURL.appendingPathComponent(root).appendingPathComponent("Season \(seasonNum)", isDirectory: true)
                             } else { folder = baseURL.appendingPathComponent(sanitizeFileName(newName)) }
@@ -522,7 +544,8 @@ struct ContentView: View {
                         Button {
                             vm.selectedFolderURL = nil; let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false
                             panel.begin { if $0 == .OK { vm.selectedFolderURL = panel.url; vm.scanFolder() } }
-                        } label: { Label(vm.t("btn_open"), systemImage: "folder") }.disabled(vm.isScanning).help(vm.t("tip_open"))
+                        } label: { Label(vm.t("btn_open"), systemImage: "folder") }
+                        .disabled(vm.isScanning).help(vm.t("tip_open"))
                         if let url = vm.selectedFolderURL { Text(url.lastPathComponent).font(.caption).foregroundColor(.secondary).padding(.leading, 4) }
                     }
                     Button { vm.scanFolder() } label: { Image(systemName: "magnifyingglass") }.disabled(vm.selectedFolderURL == nil || vm.isScanning).help(vm.t("tip_scan"))
