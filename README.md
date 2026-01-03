@@ -16,7 +16,7 @@
 - **Smart Anchor Logic:** Intelligently identifies the movie or show title by detecting the year or season, cleaning up inconsistent filenames automatically.
 - **Metadata Integration:** Connects to TMDB to retrieve official titles and release years for accurate cataloging.
 - **TV Series Support:** Native recognition of standard season/episode numbering patterns (`SxxExx`).
-- **Structured Organization:** Optional feature to move files into a standardized folder hierarchy (`Series Name/Season X/Episode`), compatible with most media center software (e.g., Plex, Emby).
+- **Structured Organization:** Optional feature to move files into a standardized folder hierarchy (`Series Name/Season X/Episode`), compatible with most media center software (e.g., Plex, Jellifyn, Emby).
 - **Disambiguation:** User interface to manually select the correct match when multiple titles are found.
 - **Undo Capability:** Safety feature to revert the last rename or move operation instantly.
 - **Multi-language:** Native support for Italian 🇮🇹 and English 🇬🇧.
