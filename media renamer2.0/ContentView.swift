@@ -10,7 +10,7 @@ import SwiftUI
 import Combine
 import UniformTypeIdentifiers
 
-// MARK: - Localizzazione
+// MARK: - Localization
 
 enum AppLanguage: String, CaseIterable, Identifiable {
     case italian = "Italiano"; case english = "English"
@@ -67,7 +67,7 @@ struct Strings {
             "alert_confirm_msg": [.italian: "Procedere?", .english: "Proceed?"],
             "alert_manual_title": [.italian: "Manuale", .english: "Manual"],
             "btn_process": [.italian: "Elabora", .english: "Process"],
-            "tip_open": [.italian: "Apri cartella", .english: "Open folder"],
+            "tip_open": [.italian: "Scegli cartella", .english: "Choose folder"],
             "tip_scan": [.italian: "Scansiona", .english: "Scan"],
             "tip_reset": [.italian: "Reset", .english: "Reset"],
             "tip_undo": [.italian: "Annulla", .english: "Undo"],
@@ -143,15 +143,14 @@ final class MediaFile: ObservableObject, Identifiable {
     }
 }
 
-// MARK: - LOGICA REGEX (Fixata per Swift String Index)
+// MARK: - Logic Utils
 
 func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: Bool) {
     let nsString = raw as NSString
     let nameWithoutExt = nsString.deletingPathExtension
-    // Primo passaggio: sostituisci punti e underscore con spazi
     let clean = nameWithoutExt.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ")
     
-    // 1. PRIORITÀ ALTA: Muro SxxExx (Serie TV)
+    // 1. TV Series Logic (SxxExx)
     let tvPattern = try! NSRegularExpression(pattern: #"(?i)\b(s\d{1,2}e\d{1,3}|\d{1,2}x\d{1,3})\b"#)
     let range = NSRange(clean.startIndex..., in: clean)
     
@@ -161,7 +160,7 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         return (cleanupTitleString(rawTitle), nil, true)
     }
     
-    // 2. PRIORITÀ MEDIA: Muro Anno (Film)
+    // 2. Movie Logic (Year)
     let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
     if let match = yearPattern.firstMatch(in: clean, options: [], range: range),
        let yRange = Range(match.range, in: clean) {
@@ -170,10 +169,9 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         return (cleanupTitleString(titlePart), yearFound, false)
     }
     
-    // 3. PRIORITÀ BASSA: "Muro Spazzatura" (Per file senza anno ma con tag)
+    // 3. Junk Wall Logic (No Year/Season)
     let junkPattern = try! NSRegularExpression(pattern: #"(?i)\b(1080p|720p|4k|2160p|bluray|web-dl|webrip|hdtv|h264|h265|hevc|x264|x265|ita|eng|multi|sub|repack|remux|ac3|aac|ddp)\b"#)
     
-    // FIX COMPILAZIONE QUI SOTTO: Convertiamo match.range in Range<String.Index>
     if let match = junkPattern.firstMatch(in: clean, options: [], range: range),
        let junkRange = Range(match.range, in: clean) {
         
@@ -181,7 +179,7 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         return (cleanupTitleString(rawTitle), nil, false)
     }
     
-    // 4. FALLBACK TOTALE
+    // 4. Fallback (Blind Search)
     return (cleanupTitleString(clean), nil, false)
 }
 
@@ -420,7 +418,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     }
 
     func requestProcessing() {
-        guard selectedFolderURL != nil else { statusText = t("err_no_folder"); return }
+        guard let baseURL = selectedFolderURL else { statusText = t("err_no_folder"); return }
         checkForAmbiguities()
         if let blocking = ambiguousMatches.first(where: { m in m.fileIndices.contains { fileList[$0].isSelected } }) {
             pendingProcessAfterDisambiguation = true; currentAmbiguity = blocking; statusText = t("err_ambiguous"); return
