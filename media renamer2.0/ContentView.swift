@@ -2,9 +2,8 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.2.2 (Stable - Compiler Fix)
-//  Target: macOS 12.0+
-//  Description: Fixed 'subscript' error by converting NSRange to String.Index correctly.
+//  Version: 1.2 (Stable)
+//  Target: macOS 14.6+
 //
 
 import SwiftUI
