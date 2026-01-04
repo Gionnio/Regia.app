@@ -2,20 +2,44 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.2 (Stable)
-//  Target: macOS 14.6+
+//  Version: 1.3.1 (Stable)
+//  Target: macOS 14.0+
 //
 
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
 
-// MARK: - Localization
+// MARK: - Enums & Localization
 
 enum AppLanguage: String, CaseIterable, Identifiable {
     case italian = "Italiano"; case english = "English"
     var id: String { self.rawValue }
     var apiCode: String { self == .italian ? "it" : "en" }
+}
+
+enum AppTheme: String, CaseIterable, Identifiable {
+    case system = "system"
+    case light = "light"
+    case dark = "dark"
+    
+    var id: String { self.rawValue }
+    
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+    
+    func label(for lang: AppLanguage) -> String {
+        switch self {
+        case .system: return lang == .italian ? "Automatico" : "Automatic"
+        case .light: return lang == .italian ? "Chiaro" : "Light"
+        case .dark: return lang == .italian ? "Scuro" : "Dark"
+        }
+    }
 }
 
 struct Strings {
@@ -25,17 +49,18 @@ struct Strings {
             "settings_title": [.italian: "Impostazioni", .english: "Settings"],
             "status_ready": [.italian: "Pronto", .english: "Ready"],
             "status_not_found": [.italian: "Non Trovato", .english: "Not Found"],
+            "status_ambiguous": [.italian: "Scegli...", .english: "Select..."],
             "status_manual": [.italian: "Pronto (Manuale)", .english: "Ready (Manual)"],
             "status_moved": [.italian: "Spostato!", .english: "Moved!"],
             "status_restored": [.italian: "Ripristinato", .english: "Restored"],
             "status_error_move": [.italian: "Errore File", .english: "File Error"],
             "status_error_net": [.italian: "Errore Rete", .english: "Network Error"],
             "msg_ready": [.italian: "Trascina qui file o cartelle.", .english: "Drag files here."],
-            "msg_adding": [.italian: "Analisi in corso...", .english: "Analyzing..."],
+            "msg_adding": [.italian: "Analisi nuovi file...", .english: "Analyzing new files..."],
             "msg_added": [.italian: "File aggiunti.", .english: "Files added."],
             "msg_scanning": [.italian: "Scansione...", .english: "Scanning..."],
-            "msg_no_files": [.italian: "Nessun file video.", .english: "No video files."],
-            "msg_scan_done": [.italian: "Scansione completata.", .english: "Scan completed."],
+            "msg_no_files": [.italian: "Nessun nuovo file.", .english: "No new files."],
+            "msg_scan_done": [.italian: "Fatto.", .english: "Done."],
             "msg_cleaned": [.italian: "Lista svuotata.", .english: "List cleared."],
             "msg_searching": [.italian: "Ricerca TMDB...", .english: "Searching TMDB..."],
             "msg_search_done": [.italian: "Ricerca completata.", .english: "Search completed."],
@@ -55,20 +80,21 @@ struct Strings {
             "sheet_cancel": [.italian: "Annulla", .english: "Cancel"],
             "sec_api": [.italian: "API", .english: "API"],
             "sec_format": [.italian: "Stile", .english: "Style"],
+            "sec_appearance": [.italian: "Aspetto", .english: "Appearance"],
             "sec_folders": [.italian: "Cartelle", .english: "Folders"],
             "sec_language": [.italian: "Lingua", .english: "Language"],
             "lbl_format": [.italian: "Formato", .english: "Format"],
             "lbl_subfolders": [.italian: "Includi sottocartelle", .english: "Include subfolders"],
             "lbl_move": [.italian: "Sposta in cartelle", .english: "Move to folders"],
-            "lbl_lang": [.italian: "Lingua", .english: "Language"],
+            "lbl_lang": [.italian: "Lingua App", .english: "App Language"],
             "btn_search": [.italian: "Cerca", .english: "Search"],
             "btn_done": [.italian: "Fatto", .english: "Done"],
             "alert_confirm_title": [.italian: "Conferma", .english: "Confirm"],
             "alert_confirm_msg": [.italian: "Procedere?", .english: "Proceed?"],
             "alert_manual_title": [.italian: "Manuale", .english: "Manual"],
             "btn_process": [.italian: "Elabora", .english: "Process"],
-            "tip_open": [.italian: "Scegli cartella", .english: "Choose folder"],
-            "tip_scan": [.italian: "Scansiona", .english: "Scan"],
+            "tip_open": [.italian: "Apri cartella", .english: "Open folder"],
+            "tip_scan": [.italian: "Scansiona (Solo Nuovi)", .english: "Scan (New Only)"],
             "tip_reset": [.italian: "Reset", .english: "Reset"],
             "tip_undo": [.italian: "Annulla", .english: "Undo"],
             "tip_tmdb": [.italian: "Cerca manuale", .english: "Manual Search"],
@@ -113,11 +139,12 @@ struct TVResult: Codable, Identifiable {
 }
 
 enum FileStatus {
-    case pronto, nonTrovato, manuale, spostato, ripristinato, erroreSpostamento, erroreRete, erroreRegex
+    case pronto, nonTrovato, ambiguo, manuale, spostato, ripristinato, erroreSpostamento, erroreRete, erroreRegex
     func label(for lang: AppLanguage) -> String {
         switch self {
         case .pronto: return Strings.get("status_ready", lang: lang)
         case .nonTrovato: return Strings.get("status_not_found", lang: lang)
+        case .ambiguo: return Strings.get("status_ambiguous", lang: lang)
         case .manuale: return Strings.get("status_manual", lang: lang)
         case .spostato: return Strings.get("status_moved", lang: lang)
         case .ripristinato: return Strings.get("status_restored", lang: lang)
@@ -150,17 +177,25 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
     let nameWithoutExt = nsString.deletingPathExtension
     let clean = nameWithoutExt.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ")
     
-    // 1. TV Series Logic (SxxExx)
+    // 1. TV Series Logic
     let tvPattern = try! NSRegularExpression(pattern: #"(?i)\b(s\d{1,2}e\d{1,3}|\d{1,2}x\d{1,3})\b"#)
     let range = NSRange(clean.startIndex..., in: clean)
     
     if let match = tvPattern.firstMatch(in: clean, options: [], range: range),
        let tRange = Range(match.range, in: clean) {
-        let rawTitle = String(clean[..<tRange.lowerBound])
+        var rawTitle = String(clean[..<tRange.lowerBound])
+        let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
+        let titleRange = NSRange(rawTitle.startIndex..., in: rawTitle)
+        if let yearMatch = yearPattern.firstMatch(in: rawTitle, options: [], range: titleRange),
+           let yRange = Range(yearMatch.range, in: rawTitle) {
+            let yearFound = String(rawTitle[yRange])
+            rawTitle.removeSubrange(yRange)
+            return (cleanupTitleString(rawTitle), yearFound, true)
+        }
         return (cleanupTitleString(rawTitle), nil, true)
     }
     
-    // 2. Movie Logic (Year)
+    // 2. Movie Logic
     let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
     if let match = yearPattern.firstMatch(in: clean, options: [], range: range),
        let yRange = Range(match.range, in: clean) {
@@ -169,17 +204,15 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         return (cleanupTitleString(titlePart), yearFound, false)
     }
     
-    // 3. Junk Wall Logic (No Year/Season)
+    // 3. Junk Wall Logic
     let junkPattern = try! NSRegularExpression(pattern: #"(?i)\b(1080p|720p|4k|2160p|bluray|web-dl|webrip|hdtv|h264|h265|hevc|x264|x265|ita|eng|multi|sub|repack|remux|ac3|aac|ddp)\b"#)
-    
     if let match = junkPattern.firstMatch(in: clean, options: [], range: range),
        let junkRange = Range(match.range, in: clean) {
-        
         let rawTitle = String(clean[..<junkRange.lowerBound])
         return (cleanupTitleString(rawTitle), nil, false)
     }
     
-    // 4. Fallback (Blind Search)
+    // 4. Fallback
     return (cleanupTitleString(clean), nil, false)
 }
 
@@ -222,6 +255,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     @AppStorage("createSubfolders") var createSubfolders = true
     @AppStorage("renameFormat") var renameFormat: RenameFormat = .plex
     @AppStorage("appLanguage") var appLanguage: AppLanguage = .italian
+    @AppStorage("appTheme") var appTheme: AppTheme = .system
     
     @Published var filterNonTrovati = false
     @Published var undoHistory: [RenameHistoryItem] = []
@@ -256,17 +290,24 @@ final class MediaOrganizerViewModel: ObservableObject {
         guard !apiKey.isEmpty else { statusText = t("err_no_api"); return }
         let videoExts = Set(videoExtensions.map { $0.lowercased() })
         let candidates = urls.filter { videoExts.contains($0.pathExtension.lowercased()) }
-        guard !candidates.isEmpty else { return }
-        if self.selectedFolderURL == nil, let first = candidates.first { self.selectedFolderURL = first.deletingLastPathComponent() }
+        let existingURLs = Set(fileList.map { $0.originalURL })
+        let newURLs = candidates.filter { !existingURLs.contains($0) }
+        guard !newURLs.isEmpty else { return }
+        if self.selectedFolderURL == nil, let first = newURLs.first { self.selectedFolderURL = first.deletingLastPathComponent() }
         statusText = t("msg_adding"); isScanning = true; progress = 0
         Task {
             var newFiles: [MediaFile] = []
-            for url in candidates {
+            for url in newURLs {
                 let parsed = parseEpisodeInfo(from: url.lastPathComponent)
                 newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV, parsedSeason: parsed.season, parsedEpisode: parsed.episode))
             }
             await searchNamesForFiles(newFiles)
-            self.fileList.append(contentsOf: newFiles); self.statusText = self.t("msg_added")
+            await MainActor.run {
+                self.fileList.append(contentsOf: newFiles); self.statusText = self.t("msg_added")
+                self.isScanning = false
+                self.checkForAmbiguities()
+                if let firstAmbiguous = ambiguousMatches.first { self.currentAmbiguity = firstAmbiguous }
+            }
         }
     }
     
@@ -284,14 +325,21 @@ final class MediaOrganizerViewModel: ObservableObject {
             } else { if let c = try? fm.contentsOfDirectory(at: baseURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) { urls = c } }
             let videoExts = Set(self.videoExtensions.map { $0.lowercased() })
             let candidates = urls.filter { videoExts.contains($0.pathExtension.lowercased()) }
-            if candidates.isEmpty { await MainActor.run { self.statusText = self.t("msg_no_files"); self.isScanning = false }; return }
+            let existingURLs = Set(fileList.map { $0.originalURL })
+            let newURLs = candidates.filter { !existingURLs.contains($0) }
+            if newURLs.isEmpty { await MainActor.run { self.statusText = self.t("msg_no_files"); self.isScanning = false }; return }
             var newFiles: [MediaFile] = []
-            for url in candidates {
+            for url in newURLs {
                 let parsed = self.parseEpisodeInfo(from: url.lastPathComponent)
                 newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV, parsedSeason: parsed.season, parsedEpisode: parsed.episode))
             }
             await self.searchNamesForFiles(newFiles)
-            await MainActor.run { self.fileList = newFiles; self.statusText = self.t("msg_scan_done"); self.isScanning = false; self.progress = 0 }
+            await MainActor.run {
+                self.fileList.append(contentsOf: newFiles); self.statusText = self.t("msg_scan_done")
+                self.isScanning = false; self.progress = 0
+                self.checkForAmbiguities()
+                if let firstAmbiguous = ambiguousMatches.first { self.currentAmbiguity = firstAmbiguous }
+            }
         }
     }
     
@@ -309,52 +357,39 @@ final class MediaOrganizerViewModel: ObservableObject {
             processed += 1
             await MainActor.run { progress = Double(processed) / Double(total); if processed > 3 { etaText = calcolaETA(processed: processed, total: total, startTime: start) } }
         }
-        await MainActor.run { isScanning = false; statusText = self.t("msg_search_done"); checkForAmbiguities(); if !ambiguousMatches.isEmpty { currentAmbiguity = ambiguousMatches.first } }
+        await MainActor.run { statusText = self.t("msg_search_done") }
     }
     
     func searchName(for file: MediaFile, overrideQuery: String? = nil, year: String? = nil) async {
         var query = ""; var yearToUse: String? = nil; var isTV = file.isTVShow
-        
-        if let q = overrideQuery, !q.isEmpty {
-            query = q
-        } else {
+        if let q = overrideQuery, !q.isEmpty { query = q } else {
             let cleaned = cleanFileNameRegex(file.originalName)
-            query = cleaned.title
-            yearToUse = cleaned.year
-            if cleaned.isTV {
-                isTV = true
-                await MainActor.run { file.isTVShow = true }
-            }
+            query = cleaned.title; yearToUse = cleaned.year
+            if cleaned.isTV { isTV = true; await MainActor.run { file.isTVShow = true } }
         }
-        
         guard !query.isEmpty else { await MainActor.run { file.status = .nonTrovato }; return }
-        
         do {
             if isTV {
                 let results: [TVResult] = try await fetchFromTMDB(query: query, endpoint: "search/tv", year: yearToUse)
-                handleResults(results, file: file)
+                handleResults(results, file: file, query: query)
             } else {
                 let results: [MovieResult] = try await fetchFromTMDB(query: query, endpoint: "search/movie", year: yearToUse)
-                handleResults(results, file: file)
+                handleResults(results, file: file, query: query)
             }
         } catch { await MainActor.run { file.status = .erroreRete } }
     }
 
-    func handleResults<T: Identifiable>(_ results: [T], file: MediaFile) {
-        let sortedResults = results.sorted { a, b in
-            let dateA = (a as? MovieResult)?.releaseDate ?? (a as? TVResult)?.firstAirDate ?? "0000"
-            let dateB = (b as? MovieResult)?.releaseDate ?? (b as? TVResult)?.firstAirDate ?? "0000"
-            return dateA > dateB
-        }
-        if sortedResults.count > 1 {
-            let cands = sortedResults.map { item -> DisambiguationCandidate in
+    func handleResults<T: Identifiable>(_ results: [T], file: MediaFile, query: String) {
+        guard !results.isEmpty else { file.status = .nonTrovato; return }
+        if results.count == 1 { if let item = results.first { applyFromAPI(item, to: file) } }
+        else {
+            let cands = results.map { item -> DisambiguationCandidate in
                 if let m = item as? MovieResult { return DisambiguationCandidate(id: "\(m.id)", title: m.title, year: m.year, date: m.releaseDate ?? "N/A") }
                 if let t = item as? TVResult { return DisambiguationCandidate(id: "\(t.id)", title: t.name, year: t.year, date: t.firstAirDate ?? "N/A") }
                 return DisambiguationCandidate(id: "0", title: "??", year: "", date: "")
             }
-            file.status = .nonTrovato; file.ambiguousCandidates = cands
-        } else if let first = sortedResults.first { applyFromAPI(first, to: file) }
-        else { file.status = .nonTrovato }
+            file.status = .ambiguo; file.ambiguousCandidates = cands
+        }
     }
     
     func applyFromAPI<T: Identifiable>(_ item: T, to file: MediaFile) {
@@ -399,17 +434,25 @@ final class MediaOrganizerViewModel: ObservableObject {
         self.retrySearchName = cleaned.title; self.isShowingRetryAlert = true
     }
     
+    func promptDisambiguation(for file: MediaFile) {
+        checkForAmbiguities()
+        if let m = ambiguousMatches.first(where: { match in match.fileIndices.contains { idx in fileList[idx].id == file.id } }) {
+            currentAmbiguity = m
+        }
+    }
+    
     func retrySearchManual(name: String) {
         let q = name.trimmingCharacters(in: .whitespacesAndNewlines); guard !q.isEmpty else { return }
         guard !apiKey.isEmpty else { statusText = t("err_no_api"); return }
-        let toRetry = targetFileForManualSearch != nil ? [targetFileForManualSearch!] : fileList.filter { $0.isSelected || [.nonTrovato, .erroreRete, .erroreRegex].contains($0.status) }
+        let toRetry = targetFileForManualSearch != nil ? [targetFileForManualSearch!] : fileList.filter { $0.isSelected || [.nonTrovato, .erroreRete, .erroreRegex, .ambiguo].contains($0.status) }
         statusText = "\(t("msg_manual_search")) '\(q)'..."; isScanning = true; progress = 0
         Task {
             let total = toRetry.count; var processed = 0
             for f in toRetry { await searchName(for: f, overrideQuery: q); processed += 1; await MainActor.run { progress = Double(processed) / Double(total) } }
             await MainActor.run {
                 isScanning = false; statusText = self.t("msg_done"); retrySearchName = ""
-                checkForAmbiguities(); if let t = targetFileForManualSearch {
+                self.checkForAmbiguities()
+                if let t = targetFileForManualSearch {
                     if let m = ambiguousMatches.first(where: { $0.fileIndices.contains { idx in fileList[idx].id == t.id } }) { currentAmbiguity = m }
                 } else if !ambiguousMatches.isEmpty { currentAmbiguity = ambiguousMatches.first }
                 targetFileForManualSearch = nil
@@ -418,7 +461,7 @@ final class MediaOrganizerViewModel: ObservableObject {
     }
 
     func requestProcessing() {
-        guard let baseURL = selectedFolderURL else { statusText = t("err_no_folder"); return }
+        guard selectedFolderURL != nil else { statusText = t("err_no_folder"); return }
         checkForAmbiguities()
         if let blocking = ambiguousMatches.first(where: { m in m.fileIndices.contains { fileList[$0].isSelected } }) {
             pendingProcessAfterDisambiguation = true; currentAmbiguity = blocking; statusText = t("err_ambiguous"); return
@@ -512,7 +555,9 @@ final class MediaOrganizerViewModel: ObservableObject {
     func checkForAmbiguities() {
         var matches: [AmbiguousMatch] = []
         for (i, file) in fileList.enumerated() {
-            if file.status == .nonTrovato, let cands = file.ambiguousCandidates, !cands.isEmpty { matches.append(AmbiguousMatch(fileIndices: [i], candidates: cands, isTV: file.isTVShow)) }
+            if file.status == .ambiguo || (file.status == .nonTrovato && file.ambiguousCandidates != nil && !file.ambiguousCandidates!.isEmpty) {
+                matches.append(AmbiguousMatch(fileIndices: [i], candidates: file.ambiguousCandidates ?? [], isTV: file.isTVShow))
+            }
         }
         ambiguousMatches = matches
     }
@@ -532,7 +577,7 @@ struct ContentView: View {
                     Text(vm.selectedFolderURL == nil ? vm.t("msg_ready") : vm.t("msg_no_files"))
                         .font(.title2).foregroundColor(.secondary).frame(maxHeight: .infinity)
                 } else { FileListView(vm: vm) }
-                Divider(); HStack { Text(vm.statusText).font(.caption).lineLimit(1); Spacer() }.padding(8).background(Color(NSColor.windowBackgroundColor))
+                Divider(); HStack { Text(vm.statusText).font(.caption).lineLimit(1); Spacer() }.padding(8).background(.thinMaterial)
             }
             .navigationTitle(vm.t("app_title"))
             .toolbar {
@@ -558,9 +603,7 @@ struct ContentView: View {
                     Button { vm.showSettingsSheet = true } label: { Label(vm.t("settings_title"), systemImage: "gearshape") }.help(vm.t("tip_settings")).keyboardShortcut(",", modifiers: .command)
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("OpenSettings"))) { _ in
-                vm.showSettingsSheet = true
-            }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("OpenSettings"))) { _ in vm.showSettingsSheet = true }
             .onDrop(of: [UTType.fileURL.identifier], isTargeted: $isDropTargeted) { providers in
                 let group = DispatchGroup(); var collected: [URL] = []
                 for provider in providers { group.enter(); provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) { collected.append(url) } else if let url = item as? URL { collected.append(url) }; group.leave() } }
@@ -604,8 +647,11 @@ struct FileListView: View {
             Divider()
             List {
                 ForEach($vm.fileList) { $file in
-                    if !vm.filterNonTrovati || [.nonTrovato, .erroreRete, .erroreRegex].contains(file.status) {
-                        FileRowView(file: file, onManualSearch: { vm.prepareManualSearch(for: file) }).environmentObject(vm)
+                    if !vm.filterNonTrovati || [.nonTrovato, .ambiguo, .erroreRete, .erroreRegex].contains(file.status) {
+                        FileRowView(file: file, onManualSearch: {
+                            if file.status == .ambiguo { vm.promptDisambiguation(for: file) }
+                            else { vm.prepareManualSearch(for: file) }
+                        }).environmentObject(vm)
                     }
                 }
             }.listStyle(.plain)
@@ -626,11 +672,106 @@ struct FileRowView: View {
                 Text(file.status.label(for: vm.appLanguage)).font(.callout).foregroundColor(color(for: file.status))
                 if [.nonTrovato, .erroreRete, .erroreRegex].contains(file.status) {
                     Button(action: onManualSearch) { Image(systemName: "magnifyingglass").foregroundColor(.blue) }.buttonStyle(.plain)
+                } else if file.status == .ambiguo {
+                    Button(action: onManualSearch) { Image(systemName: "list.bullet.circle.fill").foregroundColor(.orange) }.buttonStyle(.plain)
                 }
             }.frame(width: 140, alignment: .leading)
         }.padding(.vertical, 4)
     }
-    private func color(for s: FileStatus) -> Color { return [.pronto, .manuale, .spostato, .ripristinato].contains(s) ? .primary : .red }
+    private func color(for s: FileStatus) -> Color {
+        switch s {
+        case .ambiguo: return .orange
+        case .nonTrovato, .erroreRete, .erroreRegex, .erroreSpostamento: return .red
+        default: return .primary
+        }
+    }
+}
+
+// MARK: - Theme Picker Components
+
+struct ThemeSelectionView: View {
+    @Binding var selectedTheme: AppTheme
+    var language: AppLanguage
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            ThemeOptionView(title: AppTheme.system.label(for: language), isSelected: selectedTheme == .system) {
+                HStack(spacing: 0) {
+                    ThemePreviewIcon(mode: .light).frame(width: 30).environment(\.colorScheme, .light)
+                    ThemePreviewIcon(mode: .dark).frame(width: 30).environment(\.colorScheme, .dark)
+                }
+            }
+            .onTapGesture { selectedTheme = .system }
+            
+            ThemeOptionView(title: AppTheme.light.label(for: language), isSelected: selectedTheme == .light) {
+                ThemePreviewIcon(mode: .light).frame(width: 60).environment(\.colorScheme, .light)
+            }
+            .onTapGesture { selectedTheme = .light }
+            
+            ThemeOptionView(title: AppTheme.dark.label(for: language), isSelected: selectedTheme == .dark) {
+                ThemePreviewIcon(mode: .dark).frame(width: 60).environment(\.colorScheme, .dark)
+            }
+            .onTapGesture { selectedTheme = .dark }
+        }
+    }
+}
+
+struct ThemeOptionView<Content: View>: View {
+    let title: String
+    let isSelected: Bool
+    let content: () -> Content
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            content()
+                .frame(height: 45)
+                .cornerRadius(6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
+                )
+                .shadow(radius: 1)
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(isSelected ? .primary : .secondary)
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+struct ThemePreviewIcon: View {
+    enum Mode { case light, dark }
+    let mode: Mode
+    
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .topLeading) {
+                // Sfondo
+                Rectangle()
+                    .fill(mode == .light ? Color(nsColor: .windowBackgroundColor) : Color.black.opacity(0.8))
+                
+                // Barra menu
+                Rectangle()
+                    .fill(mode == .light ? Color.gray.opacity(0.2) : Color.white.opacity(0.1))
+                    .frame(height: 10)
+                
+                // Sidebar
+                Rectangle()
+                    .fill(mode == .light ? Color.white : Color.white.opacity(0.05))
+                    .frame(width: 15)
+                    .padding(.top, 10)
+                
+                // Contenuto linee
+                VStack(alignment: .leading, spacing: 3) {
+                    RoundedRectangle(cornerRadius: 1).fill(Color.gray.opacity(0.4)).frame(width: 25, height: 2)
+                    RoundedRectangle(cornerRadius: 1).fill(Color.gray.opacity(0.2)).frame(width: 20, height: 2)
+                }
+                .padding(.top, 16)
+                .padding(.leading, 20)
+            }
+        }
+    }
 }
 
 struct SettingsSheetView: View {
@@ -646,6 +787,10 @@ struct SettingsSheetView: View {
                         ForEach(AppLanguage.allCases) { Text($0.rawValue).tag($0) }
                     }.onChange(of: vm.appLanguage) { _, _ in vm.updateStatusReady() }
                 }
+                Section(vm.t("sec_appearance")) {
+                    ThemeSelectionView(selectedTheme: $vm.appTheme, language: vm.appLanguage)
+                        .padding(.vertical, 5)
+                }
                 Section(vm.t("sec_format")) {
                     Picker(vm.t("lbl_format"), selection: $vm.renameFormat) {
                         ForEach(RenameFormat.allCases) { Text($0.label(for: vm.appLanguage)).tag($0) }
@@ -657,7 +802,7 @@ struct SettingsSheetView: View {
                 }
             }.padding()
             Button(vm.t("btn_done")) { dismiss() }.buttonStyle(.borderedProminent).padding()
-        }.frame(width: 400, height: 500)
+        }.frame(width: 420, height: 550)
     }
 }
 

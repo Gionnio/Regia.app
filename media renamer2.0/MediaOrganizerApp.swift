@@ -2,7 +2,7 @@
 //  MediaOrganizerApp.swift
 //  Regia
 //
-//  Created by Gionnio.
+//  Entry Point & Menu Management
 //
 
 import SwiftUI
@@ -10,10 +10,12 @@ import SwiftUI
 @main
 struct RegiaApp: App {
     @State private var aboutWindow: NSWindow?
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(appTheme.colorScheme)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -47,7 +49,7 @@ struct RegiaApp: App {
         window.title = ""
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
-        window.contentView = NSHostingView(rootView: AboutView())
+        window.contentView = NSHostingView(rootView: AboutView().preferredColorScheme(appTheme.colorScheme))
         window.isReleasedWhenClosed = false
         
         NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: nil) { _ in
