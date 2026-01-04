@@ -57,7 +57,6 @@ I'm constantly working to improve Regia. Here are the features planned for upcom
 - [ ] **System Notifications:** Implement native macOS notifications upon processing completion, useful for alerting the user when long background tasks are finished.
 - [ ] **Custom Renaming Format:** Introduce a custom pattern editor (e.g., `{title} - [{year}]`) to allow users to create renaming styles beyond presets.
 - [ ] **UI Refinement:** General user interface improvements (padding, icons, visual feedback) to align even closer with the native macOS design language.
-- [ ] **Update Check:** Implement an automatic update check upon startup.
 - [ ] **Homebrew Distribution:** Make the app available via `brew cask` for easier deployment.
 
 ## Privacy & Security
