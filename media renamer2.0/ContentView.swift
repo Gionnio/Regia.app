@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.3.1 (Stable)
+//  Version: 1.3.2 (Stable)
 //  Target: macOS 14.0+
 //
 
@@ -77,6 +77,7 @@ struct Strings {
             "col_proposed": [.italian: "Nuovo Nome", .english: "New Name"],
             "col_status": [.italian: "Stato", .english: "Status"],
             "sheet_title": [.italian: "Seleziona Titolo", .english: "Select Title"],
+            "sheet_original": [.italian: "File in esame:", .english: "Analyzing file:"],
             "sheet_cancel": [.italian: "Annulla", .english: "Cancel"],
             "sec_api": [.italian: "API", .english: "API"],
             "sec_format": [.italian: "Stile", .english: "Style"],
@@ -115,13 +116,14 @@ struct AmbiguousMatch: Identifiable { let id = UUID(); let fileIndices: [Int]; l
 struct RenameHistoryItem { let originalURL: URL; let newURL: URL; let fileID: UUID }
 
 enum RenameFormat: String, CaseIterable, Identifiable {
-    case standard = "standard"; case compact = "compact"; case plex = "plex"
+    case standard = "standard"; case compact = "compact"; case plex = "plex"; case jellyfin = "jellyfin"
     var id: String { self.rawValue }
     func label(for lang: AppLanguage) -> String {
         switch self {
         case .standard: return lang == .italian ? "Titolo (Anno)" : "Title (Year)"
         case .compact: return lang == .italian ? "Titolo.Anno" : "Title.Year"
-        case .plex: return lang == .italian ? "Titolo (Anno) {tmdb-id}" : "Title (Year) {tmdb-id}"
+        case .plex: return lang == .italian ? "Plex: Titolo (Anno) {tmdb-id}" : "Plex: Title (Year) {tmdb-id}"
+        case .jellyfin: return lang == .italian ? "Jellyfin: Titolo (Anno) [tmdbid-id]" : "Jellyfin: Title (Year) [tmdbid-id]"
         }
     }
 }
@@ -186,6 +188,7 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         var rawTitle = String(clean[..<tRange.lowerBound])
         let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
         let titleRange = NSRange(rawTitle.startIndex..., in: rawTitle)
+        
         if let yearMatch = yearPattern.firstMatch(in: rawTitle, options: [], range: titleRange),
            let yRange = Range(yearMatch.range, in: rawTitle) {
             let yearFound = String(rawTitle[yRange])
@@ -412,6 +415,9 @@ final class MediaOrganizerViewModel: ObservableObject {
         case .plex:
             if file.isTVShow { finalName = "\(title) (\(year))" }
             else { finalName = "\(title) (\(year)) {tmdb-\(id)}" }
+        case .jellyfin:
+            if file.isTVShow { finalName = "\(title) (\(year))" }
+            else { finalName = "\(title) (\(year)) [tmdbid-\(id)]" }
         }
         if file.isTVShow, let s = file.parsedSeason, let e = file.parsedEpisode {
             finalName += (renameFormat == .compact ? "." : " ") + "S\(s)E\(e)"
@@ -506,7 +512,10 @@ final class MediaOrganizerViewModel: ObservableObject {
                                let seriesRange = Range(match.range(at: 1), in: newName), let seasonRange = Range(match.range(at: 2), in: newName) {
                                 let series = String(newName[seriesRange]); let seasonNum = String(newName[seasonRange].dropFirst())
                                 var rootName = series
-                                if renameFormat == .plex && !file.tmdbID.isEmpty { rootName += " {tmdb-\(file.tmdbID)}" }
+                                if !file.tmdbID.isEmpty {
+                                    if renameFormat == .plex { rootName += " {tmdb-\(file.tmdbID)}" }
+                                    else if renameFormat == .jellyfin { rootName += " [tmdbid-\(file.tmdbID)]" }
+                                }
                                 let root = sanitizeFileName(rootName)
                                 folder = baseURL.appendingPathComponent(root).appendingPathComponent("Season \(seasonNum)", isDirectory: true)
                             } else { folder = baseURL.appendingPathComponent(sanitizeFileName(newName)) }
@@ -687,8 +696,6 @@ struct FileRowView: View {
     }
 }
 
-// MARK: - Theme Picker Components
-
 struct ThemeSelectionView: View {
     @Binding var selectedTheme: AppTheme
     var language: AppLanguage
@@ -702,12 +709,10 @@ struct ThemeSelectionView: View {
                 }
             }
             .onTapGesture { selectedTheme = .system }
-            
             ThemeOptionView(title: AppTheme.light.label(for: language), isSelected: selectedTheme == .light) {
                 ThemePreviewIcon(mode: .light).frame(width: 60).environment(\.colorScheme, .light)
             }
             .onTapGesture { selectedTheme = .light }
-            
             ThemeOptionView(title: AppTheme.dark.label(for: language), isSelected: selectedTheme == .dark) {
                 ThemePreviewIcon(mode: .dark).frame(width: 60).environment(\.colorScheme, .dark)
             }
@@ -720,55 +725,31 @@ struct ThemeOptionView<Content: View>: View {
     let title: String
     let isSelected: Bool
     let content: () -> Content
-    
     var body: some View {
         VStack(spacing: 8) {
             content()
                 .frame(height: 45)
                 .cornerRadius(6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1)
-                )
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1))
                 .shadow(radius: 1)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(isSelected ? .primary : .secondary)
-        }
-        .contentShape(Rectangle())
+            Text(title).font(.caption).foregroundColor(isSelected ? .primary : .secondary)
+        }.contentShape(Rectangle())
     }
 }
 
 struct ThemePreviewIcon: View {
     enum Mode { case light, dark }
     let mode: Mode
-    
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
-                // Sfondo
-                Rectangle()
-                    .fill(mode == .light ? Color(nsColor: .windowBackgroundColor) : Color.black.opacity(0.8))
-                
-                // Barra menu
-                Rectangle()
-                    .fill(mode == .light ? Color.gray.opacity(0.2) : Color.white.opacity(0.1))
-                    .frame(height: 10)
-                
-                // Sidebar
-                Rectangle()
-                    .fill(mode == .light ? Color.white : Color.white.opacity(0.05))
-                    .frame(width: 15)
-                    .padding(.top, 10)
-                
-                // Contenuto linee
+                Rectangle().fill(mode == .light ? Color(nsColor: .windowBackgroundColor) : Color.black.opacity(0.8))
+                Rectangle().fill(mode == .light ? Color.gray.opacity(0.2) : Color.white.opacity(0.1)).frame(height: 10)
+                Rectangle().fill(mode == .light ? Color.white : Color.white.opacity(0.05)).frame(width: 15).padding(.top, 10)
                 VStack(alignment: .leading, spacing: 3) {
                     RoundedRectangle(cornerRadius: 1).fill(Color.gray.opacity(0.4)).frame(width: 25, height: 2)
                     RoundedRectangle(cornerRadius: 1).fill(Color.gray.opacity(0.2)).frame(width: 20, height: 2)
-                }
-                .padding(.top, 16)
-                .padding(.leading, 20)
+                }.padding(.top, 16).padding(.leading, 20)
             }
         }
     }
@@ -788,8 +769,7 @@ struct SettingsSheetView: View {
                     }.onChange(of: vm.appLanguage) { _, _ in vm.updateStatusReady() }
                 }
                 Section(vm.t("sec_appearance")) {
-                    ThemeSelectionView(selectedTheme: $vm.appTheme, language: vm.appLanguage)
-                        .padding(.vertical, 5)
+                    ThemeSelectionView(selectedTheme: $vm.appTheme, language: vm.appLanguage).padding(.vertical, 5)
                 }
                 Section(vm.t("sec_format")) {
                     Picker(vm.t("lbl_format"), selection: $vm.renameFormat) {
@@ -813,7 +793,14 @@ struct DisambiguationSheetView: View {
     @EnvironmentObject var vm: MediaOrganizerViewModel
     var body: some View {
         VStack {
-            Text(vm.t("sheet_title")).font(.title2).padding()
+            Text(vm.t("sheet_title")).font(.title2).padding(.top)
+            if let index = ambiguity.fileIndices.first, vm.fileList.indices.contains(index) {
+                VStack(spacing: 4) {
+                    Text(vm.t("sheet_original")).font(.caption).foregroundStyle(.secondary)
+                    Text(vm.fileList[index].originalName).font(.headline).lineLimit(2).multilineTextAlignment(.center)
+                }.padding(.horizontal).padding(.bottom, 4)
+            }
+            Divider().padding(.vertical)
             List(ambiguity.candidates) { cand in
                 Button(action: { onSelect(cand) }) {
                     HStack {

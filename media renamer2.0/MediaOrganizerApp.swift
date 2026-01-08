@@ -2,7 +2,7 @@
 //  MediaOrganizerApp.swift
 //  Regia
 //
-//  Entry Point & Menu Management
+//  Created by Gionnio.
 //
 
 import SwiftUI
@@ -97,7 +97,7 @@ struct AboutView: View {
                     .fontWeight(.medium)
             }
 
-            Link(destination: URL(string: "https://github.com/gionnio/Regia.app")!) {
+            Link(destination: URL(string: "https://github.com/gionnio/Regia")!) {
                 HStack(spacing: 6) {
                     if let _ = NSImage(named: "GitHubIcon") {
                         Image("GitHubIcon")
