@@ -68,6 +68,3 @@ This application was developed with the assistance of Artificial Intelligence fo
 
 ---
 Created with AI, ❤️ and SwiftUI.
-
----
-Created with AI, ❤️ and SwiftUI.
