@@ -21,7 +21,6 @@
 - **Undo Capability:** Safety feature to revert the last rename or move operation instantly.
 - **Multi-language:** Native support for Italian 🇮🇹 and English 🇬🇧.
 
-<img width="1212" alt="Regia Settings and List" src="https://github.com/user-attachments/assets/077a0031-eade-4af8-a09d-4419e47a0340" />
 <img width="1040" height="788" alt="Regia Settings and List" src="https://github.com/user-attachments/assets/761eab7a-32b3-4636-a8e9-147303b1b4d6" />
 
 
