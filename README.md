@@ -9,7 +9,8 @@
 
 **Regia** is a native macOS application developed in SwiftUI designed to help users manage, organize, and rename their personal video library files efficiently using official metadata.
 
-<img width="1212" alt="Regia Main Interface" src="https://github.com/user-attachments/assets/b0250c3e-a255-4a9f-91ee-ac4faf035e79" />
+<img width="1040" height="788" alt="Regia Main Interface" src="https://github.com/user-attachments/assets/c63b551d-447c-48c1-bc4a-75daf12f68ff" />
+
 
 ## ✨ Features
 - **Smart Anchor Logic:** Intelligently identifies the movie or show title by detecting the year or season, cleaning up inconsistent filenames automatically.
