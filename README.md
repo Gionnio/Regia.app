@@ -16,25 +16,24 @@
 - **Smart Anchor Logic:** Intelligently identifies the movie or show title by detecting the year or season, cleaning up inconsistent filenames automatically.
 - **Metadata Integration:** Connects to TMDB to retrieve official titles and release years for accurate cataloging.
 - **TV Series Support:** Native recognition of standard season/episode numbering patterns (`SxxExx`).
-- **Manual Search:** Manual search for a single file in case the automatic search fails
-- **Structured Organization:** Optional feature to move files into a standardized folder hierarchy (`Series Name/Season X/Episode`), compatible with most media center software (e.g., Plex, Jellyfin, Emby).
+- **Structured Organization:** Optional feature to move files into a standardized folder hierarchy, compatible with popular media servers.
+- **Plex & Jellyfin Support:** Supports standardized naming conventions including identifiers (`{tmdb-id}` for Plex, `[tmdbid-id]` for Jellyfin).
+- **Dark Mode Support:** Native Light/Dark theme switching.
 - **Disambiguation:** User interface to manually select the correct match when multiple titles are found.
 - **Undo Capability:** Safety feature to revert the last rename or move operation instantly.
 - **Multi-language:** Native support for Italian 🇮🇹 and English 🇬🇧.
 
 <img width="1040" height="788" alt="Regia Settings and List" src="https://github.com/user-attachments/assets/761eab7a-32b3-4636-a8e9-147303b1b4d6" />
 
-
-
 ## 🚀 Requirements
-- macOS 14.6 (Sonoma) or later.
+- macOS 14.0 (Sonoma) or later.
 - A personal [TMDB API Key](https://developer.themoviedb.org/docs/getting-started) (Free) is required to fetch metadata.
 
 ## 📥 Installation (Pre-built App)
 If you don't want to compile the code yourself using Xcode, you can download the ready-to-use app:
 
 1. Go to the **[Releases](../../releases)** section on the right sidebar of this page.
-2. Download the latest `.zip` file (e.g., `Regia_v1.2.zip`).
+2. Download the latest `.zip` file (e.g., `Regia_v1.3.2.zip`).
 3. Unzip the file and move `Regia.app` to your **Applications** folder.
 
 ### ⚠️ Important: How to open the app
@@ -55,18 +54,20 @@ Since this is an open-source project and not signed with a paid Apple Developer 
 
 ## 🚧 Roadmap & TODO
 
-I'm constantly working to improve Regia. Here are the features planned for upcoming releases:
+We are constantly working to improve Regia. Here are the features planned for upcoming releases:
 
 - [ ] **System Notifications:** Implement native macOS notifications upon processing completion, useful for alerting the user when long background tasks are finished.
-- [ ] **Custom Renaming Format:** Introduce a custom pattern editor (e.g., `{title} - [{year}]`) to allow users to create renaming styles beyond presets.
-- [ ] **UI Refinement:** General user interface improvements (padding, icons, visual feedback) to align even closer with the native macOS design language.
-- [ ] **Homebrew Distribution:** Make the app available via `brew cask` for easier deployment.
+- [ ] **Custom Renaming Format:** Introduce a custom pattern editor (e.g., `{title} - [{year}]`) to allow users to create renaming styles beyond the *Standard*, *Compact*, and *Plex* presets.
+- [ ] **Homebrew Support:** Create a Cask to allow easy installation and updates via command line (e.g., `brew install --cask regia`).
 
 ## Privacy & Security
 This application runs locally on your device. API Keys and file information are processed on your Mac and are never sent to external servers other than the official TMDB API for metadata retrieval.
 
 ## 🤖 AI Acknowledgment
 This application was developed with the assistance of Artificial Intelligence for code generation, logic optimization, and problem-solving.
+
+---
+Created with AI, ❤️ and SwiftUI.
 
 ---
 Created with AI, ❤️ and SwiftUI.
