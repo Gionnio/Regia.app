@@ -39,8 +39,9 @@ Ho inserito la sezione **Homebrew** subito dopo i requisiti (è il metodo consig
 The easiest way to install and keep Regia updated is using Homebrew.
 
 1. **Add the tap:**
-   ```bash
-   brew tap gionnio/regia
+```bash
+brew tap gionnio/regia
+```
 
 2. **Install the app:**
 ```bash
