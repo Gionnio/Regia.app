@@ -1,7 +1,3 @@
-Ecco il codice Markdown completo e aggiornato.
-
-Ho inserito la sezione **Homebrew** subito dopo i requisiti (è il metodo consigliato) e ho spuntato la casella relativa nella **Roadmap**.
-
 # Regia 🎬
 
 ![Swift](https://img.shields.io/badge/swift-F54A2A?style=for-the-badge&logo=swift&logoColor=white)
