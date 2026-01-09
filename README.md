@@ -42,9 +42,6 @@ The easiest way to install and keep Regia updated is using Homebrew.
    ```bash
    brew tap gionnio/regia
 
-```
-
-```
 2. **Install the app:**
 ```bash
 brew install --cask regia
