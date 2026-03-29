@@ -2,13 +2,14 @@
 //  ContentView.swift
 //  Regia
 //
-//  Version: 1.3.2 (Stable)
+//  Version: 1.3.3
 //  Target: macOS 14.0+
 //
 
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import AppKit
 
 // MARK: - Enums & Localization
 
@@ -22,9 +23,9 @@ enum AppTheme: String, CaseIterable, Identifiable {
     case system = "system"
     case light = "light"
     case dark = "dark"
-    
+
     var id: String { self.rawValue }
-    
+
     var colorScheme: ColorScheme? {
         switch self {
         case .system: return nil
@@ -32,12 +33,12 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .dark: return .dark
         }
     }
-    
+
     func label(for lang: AppLanguage) -> String {
         switch self {
         case .system: return lang == .italian ? "Automatico" : "Automatic"
-        case .light: return lang == .italian ? "Chiaro" : "Light"
-        case .dark: return lang == .italian ? "Scuro" : "Dark"
+        case .light:  return lang == .italian ? "Chiaro" : "Light"
+        case .dark:   return lang == .italian ? "Scuro" : "Dark"
         }
     }
 }
@@ -45,65 +46,67 @@ enum AppTheme: String, CaseIterable, Identifiable {
 struct Strings {
     static func get(_ key: String, lang: AppLanguage) -> String {
         let dict: [String: [AppLanguage: String]] = [
-            "app_title": [.italian: "Regia", .english: "Regia"],
-            "settings_title": [.italian: "Impostazioni", .english: "Settings"],
-            "status_ready": [.italian: "Pronto", .english: "Ready"],
-            "status_not_found": [.italian: "Non Trovato", .english: "Not Found"],
-            "status_ambiguous": [.italian: "Scegli...", .english: "Select..."],
-            "status_manual": [.italian: "Pronto (Manuale)", .english: "Ready (Manual)"],
-            "status_moved": [.italian: "Spostato!", .english: "Moved!"],
-            "status_restored": [.italian: "Ripristinato", .english: "Restored"],
-            "status_error_move": [.italian: "Errore File", .english: "File Error"],
-            "status_error_net": [.italian: "Errore Rete", .english: "Network Error"],
-            "msg_ready": [.italian: "Trascina qui file o cartelle.", .english: "Drag files here."],
-            "msg_adding": [.italian: "Analisi nuovi file...", .english: "Analyzing new files..."],
-            "msg_added": [.italian: "File aggiunti.", .english: "Files added."],
-            "msg_scanning": [.italian: "Scansione...", .english: "Scanning..."],
-            "msg_no_files": [.italian: "Nessun nuovo file.", .english: "No new files."],
-            "msg_scan_done": [.italian: "Fatto.", .english: "Done."],
-            "msg_cleaned": [.italian: "Lista svuotata.", .english: "List cleared."],
-            "msg_searching": [.italian: "Ricerca TMDB...", .english: "Searching TMDB..."],
-            "msg_search_done": [.italian: "Ricerca completata.", .english: "Search completed."],
-            "msg_processing": [.italian: "Elaborazione...", .english: "Processing..."],
-            "msg_done": [.italian: "Tutto fatto!", .english: "All done!"],
-            "msg_undoing": [.italian: "Ripristino...", .english: "Restoring..."],
-            "msg_undo_done": [.italian: "Ripristinati:", .english: "Restored:"],
-            "msg_manual_search": [.italian: "Cerca:", .english: "Search:"],
-            "err_no_folder": [.italian: "Nessuna cartella.", .english: "No folder."],
-            "err_no_api": [.italian: "Manca API Key.", .english: "Missing API Key."],
-            "err_no_ready": [.italian: "Nessun file pronto.", .english: "No files ready."],
-            "err_ambiguous": [.italian: "Risolvi ambiguità.", .english: "Resolve ambiguities."],
-            "col_original": [.italian: "File Originale", .english: "Original File"],
-            "col_proposed": [.italian: "Nuovo Nome", .english: "New Name"],
-            "col_status": [.italian: "Stato", .english: "Status"],
-            "sheet_title": [.italian: "Seleziona Titolo", .english: "Select Title"],
-            "sheet_original": [.italian: "File in esame:", .english: "Analyzing file:"],
-            "sheet_cancel": [.italian: "Annulla", .english: "Cancel"],
-            "sec_api": [.italian: "API", .english: "API"],
-            "sec_format": [.italian: "Stile", .english: "Style"],
-            "sec_appearance": [.italian: "Aspetto", .english: "Appearance"],
-            "sec_folders": [.italian: "Cartelle", .english: "Folders"],
-            "sec_language": [.italian: "Lingua", .english: "Language"],
-            "lbl_format": [.italian: "Formato", .english: "Format"],
-            "lbl_subfolders": [.italian: "Includi sottocartelle", .english: "Include subfolders"],
-            "lbl_move": [.italian: "Sposta in cartelle", .english: "Move to folders"],
-            "lbl_lang": [.italian: "Lingua App", .english: "App Language"],
-            "btn_search": [.italian: "Cerca", .english: "Search"],
-            "btn_done": [.italian: "Fatto", .english: "Done"],
-            "alert_confirm_title": [.italian: "Conferma", .english: "Confirm"],
-            "alert_confirm_msg": [.italian: "Procedere?", .english: "Proceed?"],
-            "alert_manual_title": [.italian: "Manuale", .english: "Manual"],
-            "btn_process": [.italian: "Elabora", .english: "Process"],
-            "tip_open": [.italian: "Apri cartella", .english: "Open folder"],
-            "tip_scan": [.italian: "Scansiona (Solo Nuovi)", .english: "Scan (New Only)"],
-            "tip_reset": [.italian: "Reset", .english: "Reset"],
-            "tip_undo": [.italian: "Annulla", .english: "Undo"],
-            "tip_tmdb": [.italian: "Cerca manuale", .english: "Manual Search"],
-            "tip_process": [.italian: "Applica", .english: "Apply"],
-            "tip_settings": [.italian: "Impostazioni", .english: "Settings"],
-            "tip_sel_all": [.italian: "Tutti", .english: "All"],
-            "tip_desel_all": [.italian: "Nessuno", .english: "None"],
-            "tip_filter": [.italian: "Filtra", .english: "Filter"]
+            "app_title":          [.italian: "Regia",                   .english: "Regia"],
+            "settings_title":     [.italian: "Impostazioni",            .english: "Settings"],
+            "status_ready":       [.italian: "Pronto",                  .english: "Ready"],
+            "status_not_found":   [.italian: "Non Trovato",             .english: "Not Found"],
+            "status_ambiguous":   [.italian: "Scegli...",               .english: "Select..."],
+            "status_manual":      [.italian: "Pronto (Manuale)",        .english: "Ready (Manual)"],
+            "status_moved":       [.italian: "Spostato!",               .english: "Moved!"],
+            "status_restored":    [.italian: "Ripristinato",            .english: "Restored"],
+            "status_error_move":  [.italian: "Errore File",             .english: "File Error"],
+            "status_error_net":   [.italian: "Errore Rete",             .english: "Network Error"],
+            "msg_ready":          [.italian: "Trascina qui file o cartelle.", .english: "Drag files or folders here."],
+            "msg_adding":         [.italian: "Analisi nuovi file...",   .english: "Analyzing new files..."],
+            "msg_added":          [.italian: "File aggiunti.",          .english: "Files added."],
+            "msg_scanning":       [.italian: "Scansione...",            .english: "Scanning..."],
+            "msg_no_files":       [.italian: "Nessun nuovo file.",      .english: "No new files."],
+            "msg_scan_done":      [.italian: "Fatto.",                  .english: "Done."],
+            "msg_cleaned":        [.italian: "Lista svuotata.",         .english: "List cleared."],
+            "msg_searching":      [.italian: "Ricerca TMDB...",         .english: "Searching TMDB..."],
+            "msg_search_done":    [.italian: "Ricerca completata.",     .english: "Search completed."],
+            "msg_processing":     [.italian: "Elaborazione...",         .english: "Processing..."],
+            "msg_done":           [.italian: "Tutto fatto!",            .english: "All done!"],
+            "msg_undoing":        [.italian: "Ripristino...",           .english: "Restoring..."],
+            "msg_undo_done":      [.italian: "Ripristinati:",           .english: "Restored:"],
+            "msg_manual_search":  [.italian: "Cerca:",                  .english: "Search:"],
+            "err_no_folder":      [.italian: "Nessuna cartella.",       .english: "No folder."],
+            "err_no_api":         [.italian: "Manca API Key.",          .english: "Missing API Key."],
+            "err_no_ready":       [.italian: "Nessun file pronto.",     .english: "No files ready."],
+            "err_ambiguous":      [.italian: "Risolvi ambiguità.",      .english: "Resolve ambiguities."],
+            "col_original":       [.italian: "File Originale",          .english: "Original File"],
+            "col_proposed":       [.italian: "Nuovo Nome",              .english: "New Name"],
+            "col_status":         [.italian: "Stato",                   .english: "Status"],
+            "sheet_title":        [.italian: "Seleziona Titolo",        .english: "Select Title"],
+            "sheet_original":     [.italian: "File in esame:",          .english: "Analyzing file:"],
+            "sheet_cancel":       [.italian: "Annulla",                 .english: "Cancel"],
+            "sec_api":            [.italian: "API",                     .english: "API"],
+            "sec_format":         [.italian: "Stile",                   .english: "Style"],
+            "sec_appearance":     [.italian: "Aspetto",                 .english: "Appearance"],
+            "sec_folders":        [.italian: "Cartelle",                .english: "Folders"],
+            "sec_language":       [.italian: "Lingua",                  .english: "Language"],
+            "lbl_format":         [.italian: "Formato",                 .english: "Format"],
+            "lbl_subfolders":     [.italian: "Includi sottocartelle",   .english: "Include subfolders"],
+            "lbl_move":           [.italian: "Sposta in cartelle",      .english: "Move to folders"],
+            "lbl_lang":           [.italian: "Lingua App",              .english: "App Language"],
+            "btn_search":         [.italian: "Cerca",                   .english: "Search"],
+            "btn_done":           [.italian: "Fatto",                   .english: "Done"],
+            "btn_open":           [.italian: "Apri",                    .english: "Open"],
+            "btn_tmdb":           [.italian: "Cerca TMDB",              .english: "Search TMDB"],
+            "btn_process":        [.italian: "Elabora",                 .english: "Process"],
+            "alert_confirm_title":[.italian: "Conferma",                .english: "Confirm"],
+            "alert_confirm_msg":  [.italian: "Procedere?",              .english: "Proceed?"],
+            "alert_manual_title": [.italian: "Manuale",                 .english: "Manual"],
+            "tip_open":           [.italian: "Apri cartella",           .english: "Open folder"],
+            "tip_scan":           [.italian: "Scansiona (Solo Nuovi)",  .english: "Scan (New Only)"],
+            "tip_reset":          [.italian: "Reset",                   .english: "Reset"],
+            "tip_undo":           [.italian: "Annulla",                 .english: "Undo"],
+            "tip_tmdb":           [.italian: "Cerca manuale",           .english: "Manual Search"],
+            "tip_process":        [.italian: "Applica",                 .english: "Apply"],
+            "tip_settings":       [.italian: "Impostazioni",            .english: "Settings"],
+            "tip_sel_all":        [.italian: "Tutti",                   .english: "All"],
+            "tip_desel_all":      [.italian: "Nessuno",                 .english: "None"],
+            "tip_filter":         [.italian: "Filtra",                  .english: "Filter"]
         ]
         return dict[key]?[lang] ?? key
     }
@@ -120,9 +123,9 @@ enum RenameFormat: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     func label(for lang: AppLanguage) -> String {
         switch self {
-        case .standard: return lang == .italian ? "Titolo (Anno)" : "Title (Year)"
-        case .compact: return lang == .italian ? "Titolo.Anno" : "Title.Year"
-        case .plex: return lang == .italian ? "Plex: Titolo (Anno) {tmdb-id}" : "Plex: Title (Year) {tmdb-id}"
+        case .standard: return lang == .italian ? "Titolo (Anno)"                    : "Title (Year)"
+        case .compact:  return lang == .italian ? "Titolo.Anno"                      : "Title.Year"
+        case .plex:     return lang == .italian ? "Plex: Titolo (Anno) {tmdb-id}"    : "Plex: Title (Year) {tmdb-id}"
         case .jellyfin: return lang == .italian ? "Jellyfin: Titolo (Anno) [tmdbid-id]" : "Jellyfin: Title (Year) [tmdbid-id]"
         }
     }
@@ -144,15 +147,15 @@ enum FileStatus {
     case pronto, nonTrovato, ambiguo, manuale, spostato, ripristinato, erroreSpostamento, erroreRete, erroreRegex
     func label(for lang: AppLanguage) -> String {
         switch self {
-        case .pronto: return Strings.get("status_ready", lang: lang)
-        case .nonTrovato: return Strings.get("status_not_found", lang: lang)
-        case .ambiguo: return Strings.get("status_ambiguous", lang: lang)
-        case .manuale: return Strings.get("status_manual", lang: lang)
-        case .spostato: return Strings.get("status_moved", lang: lang)
-        case .ripristinato: return Strings.get("status_restored", lang: lang)
+        case .pronto:            return Strings.get("status_ready",      lang: lang)
+        case .nonTrovato:        return Strings.get("status_not_found",  lang: lang)
+        case .ambiguo:           return Strings.get("status_ambiguous",  lang: lang)
+        case .manuale:           return Strings.get("status_manual",     lang: lang)
+        case .spostato:          return Strings.get("status_moved",      lang: lang)
+        case .ripristinato:      return Strings.get("status_restored",   lang: lang)
         case .erroreSpostamento: return Strings.get("status_error_move", lang: lang)
-        case .erroreRete: return Strings.get("status_error_net", lang: lang)
-        case .erroreRegex: return "Error"
+        case .erroreRete:        return Strings.get("status_error_net",  lang: lang)
+        case .erroreRegex:       return "Error"
         }
     }
 }
@@ -178,17 +181,16 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
     let nsString = raw as NSString
     let nameWithoutExt = nsString.deletingPathExtension
     let clean = nameWithoutExt.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ")
-    
+
     // 1. TV Series Logic
     let tvPattern = try! NSRegularExpression(pattern: #"(?i)\b(s\d{1,2}e\d{1,3}|\d{1,2}x\d{1,3})\b"#)
     let range = NSRange(clean.startIndex..., in: clean)
-    
+
     if let match = tvPattern.firstMatch(in: clean, options: [], range: range),
        let tRange = Range(match.range, in: clean) {
         var rawTitle = String(clean[..<tRange.lowerBound])
         let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
         let titleRange = NSRange(rawTitle.startIndex..., in: rawTitle)
-        
         if let yearMatch = yearPattern.firstMatch(in: rawTitle, options: [], range: titleRange),
            let yRange = Range(yearMatch.range, in: rawTitle) {
             let yearFound = String(rawTitle[yRange])
@@ -197,7 +199,7 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         }
         return (cleanupTitleString(rawTitle), nil, true)
     }
-    
+
     // 2. Movie Logic
     let yearPattern = try! NSRegularExpression(pattern: #"\b(19\d{2}|20\d{2})\b"#)
     if let match = yearPattern.firstMatch(in: clean, options: [], range: range),
@@ -206,7 +208,7 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         let titlePart = String(clean[..<yRange.lowerBound])
         return (cleanupTitleString(titlePart), yearFound, false)
     }
-    
+
     // 3. Junk Wall Logic
     let junkPattern = try! NSRegularExpression(pattern: #"(?i)\b(1080p|720p|4k|2160p|bluray|web-dl|webrip|hdtv|h264|h265|hevc|x264|x265|ita|eng|multi|sub|repack|remux|ac3|aac|ddp)\b"#)
     if let match = junkPattern.firstMatch(in: clean, options: [], range: range),
@@ -214,7 +216,7 @@ func cleanFileNameRegex(_ raw: String) -> (title: String, year: String?, isTV: B
         let rawTitle = String(clean[..<junkRange.lowerBound])
         return (cleanupTitleString(rawTitle), nil, false)
     }
-    
+
     // 4. Fallback
     return (cleanupTitleString(clean), nil, false)
 }
@@ -239,6 +241,62 @@ func calcolaETA(processed: Int, total: Int, startTime: Date) -> String {
     return remaining < 60 ? "\(Int(remaining)) sec" : "\(Int(remaining / 60)) min"
 }
 
+// MARK: - Drag & Drop Helper
+
+/// Risolve in modo sincrono (main thread) un NSItemProvider in una URL locale,
+/// gestendo sia file singoli sia cartelle e il caso in cui il provider restituisca
+/// un bookmark data invece di una URL diretta.
+@MainActor
+func resolveProviders(_ providers: [NSItemProvider]) async -> [URL] {
+    await withCheckedContinuation { continuation in
+        let group = DispatchGroup()
+        var collected: [URL] = []
+        let lock = NSLock()
+
+        // Tipi accettati, in ordine di preferenza
+        let acceptedTypes: [String] = [
+            UTType.fileURL.identifier,
+            "public.file-url",
+            UTType.folder.identifier,
+            "public.folder"
+        ]
+
+        for provider in providers {
+            // Scegli il primo tipo supportato
+            guard let typeIdentifier = acceptedTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0) }) else { continue }
+
+            group.enter()
+            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, error in
+                defer { group.leave() }
+                var resolved: URL? = nil
+
+                if let url = item as? URL {
+                    resolved = url
+                } else if let data = item as? Data {
+                    // Alcuni provider restituiscono la URL come Data (rappresentazione UTF-8 del path o bookmark)
+                    if let url = URL(dataRepresentation: data, relativeTo: nil, isAbsolute: true) {
+                        resolved = url
+                    } else if let str = String(data: data, encoding: .utf8), let url = URL(string: str) {
+                        resolved = url
+                    }
+                } else if let str = item as? String, let url = URL(string: str) {
+                    resolved = url
+                }
+
+                if let url = resolved {
+                    // Normalizza i path con file:// encoding
+                    let clean = url.standardizedFileURL
+                    lock.lock(); collected.append(clean); lock.unlock()
+                }
+            }
+        }
+
+        group.notify(queue: .main) {
+            continuation.resume(returning: collected)
+        }
+    }
+}
+
 // MARK: - ViewModel
 
 @MainActor
@@ -252,27 +310,31 @@ final class MediaOrganizerViewModel: ObservableObject {
     @Published var targetFileForManualSearch: MediaFile? = nil
     @Published var showConfirmationAlert = false
     @Published var showSettingsSheet = false
-    
-    @AppStorage("tmdbApiKey") var apiKey: String = ""
+
+    @AppStorage("tmdbApiKey")       var apiKey: String = ""
     @AppStorage("includeSubfolders") var includeSubfolders = true
-    @AppStorage("createSubfolders") var createSubfolders = true
-    @AppStorage("renameFormat") var renameFormat: RenameFormat = .plex
-    @AppStorage("appLanguage") var appLanguage: AppLanguage = .italian
-    @AppStorage("appTheme") var appTheme: AppTheme = .system
-    
+    @AppStorage("createSubfolders")  var createSubfolders = true
+    @AppStorage("renameFormat")      var renameFormat: RenameFormat = .plex
+    @AppStorage("appLanguage")       var appLanguage: AppLanguage = .italian
+    @AppStorage("appTheme")          var appTheme: AppTheme = .system
+
     @Published var filterNonTrovati = false
     @Published var undoHistory: [RenameHistoryItem] = []
     @Published var ambiguousMatches: [AmbiguousMatch] = []
     @Published var currentAmbiguity: AmbiguousMatch? = nil
     @Published var pendingProcessAfterDisambiguation = false
-    
+
     private let videoExtensions = ["mkv", "mp4", "avi", "mov", "m4v"]
-    let episodeRegex = try! NSRegularExpression(pattern: #"(?i)(?:s|stagione|^)[.\s]*(\d{1,2})[.\s]*(?:e|ep|episodio|x|-)[.\s]*(\d{1,3})|(\d{1,2})x(\d{1,3})"#, options: [])
-    let absoluteEpRegex = try! NSRegularExpression(pattern: #"(?i)(?:^|[\s_\-\[])(?:e|ep|episodio)[.\s]*(\d{2,4})(?:[\s_\-\]]|$)"#, options: [])
-    
+    let episodeRegex = try! NSRegularExpression(
+        pattern: #"(?i)(?:s|stagione|^)[.\s]*(\d{1,2})[.\s]*(?:e|ep|episodio|x|-)[.\s]*(\d{1,3})|(\d{1,2})x(\d{1,3})"#,
+        options: [])
+    let absoluteEpRegex = try! NSRegularExpression(
+        pattern: #"(?i)(?:^|[\s_\-\[])(?:e|ep|episodio)[.\s]*(\d{2,4})(?:[\s_\-\]]|$)"#,
+        options: [])
+
     init() { self.statusText = Strings.get("msg_ready", lang: .italian) }
-    func t(_ key: String) -> String { return Strings.get(key, lang: appLanguage) }
-    func updateStatusReady() { self.statusText = t("msg_ready") }
+    func t(_ key: String) -> String { Strings.get(key, lang: appLanguage) }
+    func updateStatusReady() { statusText = t("msg_ready") }
 
     func parseEpisodeInfo(from name: String) -> (isTV: Bool, season: String?, episode: String?) {
         let ns = NSRange(name.startIndex..., in: name)
@@ -289,6 +351,76 @@ final class MediaOrganizerViewModel: ObservableObject {
         return (false, nil, nil)
     }
 
+    // MARK: Drop entry-point
+
+    /// Gestisce il drop: accetta sia file video singoli sia cartelle intere.
+    func handleDrop(providers: [NSItemProvider]) {
+        guard !apiKey.isEmpty else { statusText = t("err_no_api"); return }
+        statusText = t("msg_adding"); isScanning = true; progress = 0
+
+        Task {
+            let urls = await resolveProviders(providers)
+            guard !urls.isEmpty else {
+                await MainActor.run { self.statusText = self.t("msg_no_files"); self.isScanning = false }
+                return
+            }
+
+            // Espandi le cartelle, raccogli i video
+            let videoExts = Set(videoExtensions.map { $0.lowercased() })
+            var videoURLs: [URL] = []
+            let fm = FileManager.default
+
+            for url in urls {
+                var isDir: ObjCBool = false
+                guard fm.fileExists(atPath: url.path, isDirectory: &isDir) else { continue }
+
+                if isDir.boolValue {
+                    // Cartella droppata: imposta selectedFolderURL e raccoglie ricorsivamente
+                    if selectedFolderURL == nil { await MainActor.run { self.selectedFolderURL = url } }
+                    let opts: FileManager.DirectoryEnumerationOptions = includeSubfolders ? [.skipsHiddenFiles] : [.skipsHiddenFiles, .skipsSubdirectoryDescendants]
+                    if let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey], options: opts) {
+                        while let item = enumerator.nextObject() as? URL {
+                            if videoExts.contains(item.pathExtension.lowercased()) { videoURLs.append(item) }
+                        }
+                    }
+                } else {
+                    if videoExts.contains(url.pathExtension.lowercased()) { videoURLs.append(url) }
+                }
+            }
+
+            // Deduplicazione
+            let existingURLs = Set(fileList.map { $0.originalURL })
+            let newURLs = videoURLs.filter { !existingURLs.contains($0) }
+            guard !newURLs.isEmpty else {
+                await MainActor.run { self.statusText = self.t("msg_no_files"); self.isScanning = false }
+                return
+            }
+
+            // Imposta la cartella di base dal primo file se non già impostata
+            if selectedFolderURL == nil, let first = newURLs.first {
+                await MainActor.run { self.selectedFolderURL = first.deletingLastPathComponent() }
+            }
+
+            var newFiles: [MediaFile] = []
+            for url in newURLs {
+                let parsed = parseEpisodeInfo(from: url.lastPathComponent)
+                newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV,
+                                          parsedSeason: parsed.season, parsedEpisode: parsed.episode))
+            }
+
+            await searchNamesForFiles(newFiles)
+
+            await MainActor.run {
+                self.fileList.append(contentsOf: newFiles)
+                self.statusText = self.t("msg_added")
+                self.isScanning = false
+                self.checkForAmbiguities()
+                if let first = ambiguousMatches.first { currentAmbiguity = first }
+            }
+        }
+    }
+
+    /// Retained for backwards compatibility (called internally).
     func addDroppedFiles(urls: [URL]) {
         guard !apiKey.isEmpty else { statusText = t("err_no_api"); return }
         let videoExts = Set(videoExtensions.map { $0.lowercased() })
@@ -296,73 +428,85 @@ final class MediaOrganizerViewModel: ObservableObject {
         let existingURLs = Set(fileList.map { $0.originalURL })
         let newURLs = candidates.filter { !existingURLs.contains($0) }
         guard !newURLs.isEmpty else { return }
-        if self.selectedFolderURL == nil, let first = newURLs.first { self.selectedFolderURL = first.deletingLastPathComponent() }
+        if selectedFolderURL == nil, let first = newURLs.first { selectedFolderURL = first.deletingLastPathComponent() }
         statusText = t("msg_adding"); isScanning = true; progress = 0
         Task {
             var newFiles: [MediaFile] = []
             for url in newURLs {
                 let parsed = parseEpisodeInfo(from: url.lastPathComponent)
-                newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV, parsedSeason: parsed.season, parsedEpisode: parsed.episode))
+                newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV,
+                                          parsedSeason: parsed.season, parsedEpisode: parsed.episode))
             }
             await searchNamesForFiles(newFiles)
             await MainActor.run {
                 self.fileList.append(contentsOf: newFiles); self.statusText = self.t("msg_added")
                 self.isScanning = false
                 self.checkForAmbiguities()
-                if let firstAmbiguous = ambiguousMatches.first { self.currentAmbiguity = firstAmbiguous }
+                if let firstAmbiguous = ambiguousMatches.first { currentAmbiguity = firstAmbiguous }
             }
         }
     }
-    
+
     func scanFolder() {
         guard let baseURL = selectedFolderURL else { statusText = t("err_no_folder"); return }
         guard !apiKey.isEmpty else { statusText = t("err_no_api"); return }
         statusText = t("msg_scanning"); isScanning = true; progress = 0; etaText = ""
         Task {
-            let access = baseURL.startAccessingSecurityScopedResource(); defer { if access { baseURL.stopAccessingSecurityScopedResource() } }
+            let access = baseURL.startAccessingSecurityScopedResource()
+            defer { if access { baseURL.stopAccessingSecurityScopedResource() } }
             let fm = FileManager.default; var urls: [URL] = []
             if includeSubfolders {
                 if let en = fm.enumerator(at: baseURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) {
                     while let obj = en.nextObject() { if let url = obj as? URL { urls.append(url) } }
                 }
-            } else { if let c = try? fm.contentsOfDirectory(at: baseURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) { urls = c } }
-            let videoExts = Set(self.videoExtensions.map { $0.lowercased() })
+            } else {
+                if let c = try? fm.contentsOfDirectory(at: baseURL, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) { urls = c }
+            }
+            let videoExts = Set(videoExtensions.map { $0.lowercased() })
             let candidates = urls.filter { videoExts.contains($0.pathExtension.lowercased()) }
             let existingURLs = Set(fileList.map { $0.originalURL })
             let newURLs = candidates.filter { !existingURLs.contains($0) }
-            if newURLs.isEmpty { await MainActor.run { self.statusText = self.t("msg_no_files"); self.isScanning = false }; return }
+            if newURLs.isEmpty {
+                await MainActor.run { self.statusText = self.t("msg_no_files"); self.isScanning = false }
+                return
+            }
             var newFiles: [MediaFile] = []
             for url in newURLs {
-                let parsed = self.parseEpisodeInfo(from: url.lastPathComponent)
-                newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV, parsedSeason: parsed.season, parsedEpisode: parsed.episode))
+                let parsed = parseEpisodeInfo(from: url.lastPathComponent)
+                newFiles.append(MediaFile(url: url, status: .pronto, isTVShow: parsed.isTV,
+                                          parsedSeason: parsed.season, parsedEpisode: parsed.episode))
             }
-            await self.searchNamesForFiles(newFiles)
+            await searchNamesForFiles(newFiles)
             await MainActor.run {
                 self.fileList.append(contentsOf: newFiles); self.statusText = self.t("msg_scan_done")
                 self.isScanning = false; self.progress = 0
                 self.checkForAmbiguities()
-                if let firstAmbiguous = ambiguousMatches.first { self.currentAmbiguity = firstAmbiguous }
+                if let firstAmbiguous = ambiguousMatches.first { currentAmbiguity = firstAmbiguous }
             }
         }
     }
-    
+
     func resetAll() {
         isScanning = false; isProcessing = false; progress = 0
-        fileList.removeAll(); ambiguousMatches.removeAll(); undoHistory.removeAll(); currentAmbiguity = nil; statusText = t("msg_cleaned")
+        fileList.removeAll(); ambiguousMatches.removeAll(); undoHistory.removeAll()
+        currentAmbiguity = nil; statusText = t("msg_cleaned")
     }
-    
+
     func searchNamesForFiles(_ files: [MediaFile]) async {
-        await MainActor.run { statusText = self.t("msg_searching") }
+        await MainActor.run { statusText = t("msg_searching") }
         progress = 0; let total = files.count; let start = Date(); var processed = 0
         for file in files {
             if apiKey.isEmpty { file.status = .erroreRete; continue }
             await searchName(for: file)
             processed += 1
-            await MainActor.run { progress = Double(processed) / Double(total); if processed > 3 { etaText = calcolaETA(processed: processed, total: total, startTime: start) } }
+            await MainActor.run {
+                progress = Double(processed) / Double(total)
+                if processed > 3 { etaText = calcolaETA(processed: processed, total: total, startTime: start) }
+            }
         }
-        await MainActor.run { statusText = self.t("msg_search_done") }
+        await MainActor.run { statusText = t("msg_search_done") }
     }
-    
+
     func searchName(for file: MediaFile, overrideQuery: String? = nil, year: String? = nil) async {
         var query = ""; var yearToUse: String? = nil; var isTV = file.isTVShow
         if let q = overrideQuery, !q.isEmpty { query = q } else {
@@ -388,30 +532,30 @@ final class MediaOrganizerViewModel: ObservableObject {
         else {
             let cands = results.map { item -> DisambiguationCandidate in
                 if let m = item as? MovieResult { return DisambiguationCandidate(id: "\(m.id)", title: m.title, year: m.year, date: m.releaseDate ?? "N/A") }
-                if let t = item as? TVResult { return DisambiguationCandidate(id: "\(t.id)", title: t.name, year: t.year, date: t.firstAirDate ?? "N/A") }
+                if let tv = item as? TVResult { return DisambiguationCandidate(id: "\(tv.id)", title: tv.name, year: tv.year, date: tv.firstAirDate ?? "N/A") }
                 return DisambiguationCandidate(id: "0", title: "??", year: "", date: "")
             }
             file.status = .ambiguo; file.ambiguousCandidates = cands
         }
     }
-    
+
     func applyFromAPI<T: Identifiable>(_ item: T, to file: MediaFile) {
         let title: String; let year: String; let id: String
         if let m = item as? MovieResult { title = m.title; year = m.year; id = "\(m.id)" }
-        else if let t = item as? TVResult { title = t.name; year = t.year; id = "\(t.id)" }
+        else if let tv = item as? TVResult { title = tv.name; year = tv.year; id = "\(tv.id)" }
         else { return }
         generateAndSetProposedName(title: title, year: year, id: id, file: file)
     }
-    
+
     func applyFromCandidate(_ cand: DisambiguationCandidate, to file: MediaFile) {
         generateAndSetProposedName(title: cand.title, year: cand.year, id: cand.id, file: file)
     }
-    
+
     private func generateAndSetProposedName(title: String, year: String, id: String, file: MediaFile) {
         file.tmdbID = id; var finalName = ""
         switch renameFormat {
         case .standard: finalName = "\(title) (\(year))"
-        case .compact: finalName = "\(title.replacingOccurrences(of: " ", with: ".")) .\(year)"
+        case .compact:  finalName = "\(title.replacingOccurrences(of: " ", with: ".")).\(year)"
         case .plex:
             if file.isTVShow { finalName = "\(title) (\(year))" }
             else { finalName = "\(title) (\(year)) {tmdb-\(id)}" }
@@ -436,30 +580,38 @@ final class MediaOrganizerViewModel: ObservableObject {
     }
 
     func prepareManualSearch(for file: MediaFile) {
-        self.targetFileForManualSearch = file; let cleaned = cleanFileNameRegex(file.originalName)
-        self.retrySearchName = cleaned.title; self.isShowingRetryAlert = true
+        targetFileForManualSearch = file
+        let cleaned = cleanFileNameRegex(file.originalName)
+        retrySearchName = cleaned.title
+        isShowingRetryAlert = true
     }
-    
+
     func promptDisambiguation(for file: MediaFile) {
         checkForAmbiguities()
         if let m = ambiguousMatches.first(where: { match in match.fileIndices.contains { idx in fileList[idx].id == file.id } }) {
             currentAmbiguity = m
         }
     }
-    
+
     func retrySearchManual(name: String) {
         let q = name.trimmingCharacters(in: .whitespacesAndNewlines); guard !q.isEmpty else { return }
         guard !apiKey.isEmpty else { statusText = t("err_no_api"); return }
-        let toRetry = targetFileForManualSearch != nil ? [targetFileForManualSearch!] : fileList.filter { $0.isSelected || [.nonTrovato, .erroreRete, .erroreRegex, .ambiguo].contains($0.status) }
+        let toRetry = targetFileForManualSearch != nil
+            ? [targetFileForManualSearch!]
+            : fileList.filter { $0.isSelected || [.nonTrovato, .erroreRete, .erroreRegex, .ambiguo].contains($0.status) }
         statusText = "\(t("msg_manual_search")) '\(q)'..."; isScanning = true; progress = 0
         Task {
             let total = toRetry.count; var processed = 0
-            for f in toRetry { await searchName(for: f, overrideQuery: q); processed += 1; await MainActor.run { progress = Double(processed) / Double(total) } }
+            for f in toRetry {
+                await searchName(for: f, overrideQuery: q)
+                processed += 1
+                await MainActor.run { progress = Double(processed) / Double(total) }
+            }
             await MainActor.run {
-                isScanning = false; statusText = self.t("msg_done"); retrySearchName = ""
-                self.checkForAmbiguities()
-                if let t = targetFileForManualSearch {
-                    if let m = ambiguousMatches.first(where: { $0.fileIndices.contains { idx in fileList[idx].id == t.id } }) { currentAmbiguity = m }
+                isScanning = false; statusText = t("msg_done"); retrySearchName = ""
+                checkForAmbiguities()
+                if let tgt = targetFileForManualSearch {
+                    if let m = ambiguousMatches.first(where: { $0.fileIndices.contains { idx in fileList[idx].id == tgt.id } }) { currentAmbiguity = m }
                 } else if !ambiguousMatches.isEmpty { currentAmbiguity = ambiguousMatches.first }
                 targetFileForManualSearch = nil
             }
@@ -484,8 +636,7 @@ final class MediaOrganizerViewModel: ObservableObject {
                 let panel = NSOpenPanel()
                 panel.message = "Regia necessita del permesso di scrittura per questa cartella. Seleziona '\(url.lastPathComponent)'."
                 panel.prompt = "Concedi Accesso"
-                panel.canChooseDirectories = true
-                panel.canChooseFiles = false
+                panel.canChooseDirectories = true; panel.canChooseFiles = false
                 panel.directoryURL = url
                 if panel.runModal() == .OK { _ = panel.url?.startAccessingSecurityScopedResource() }
             }
@@ -496,45 +647,73 @@ final class MediaOrganizerViewModel: ObservableObject {
         guard let baseURL = selectedFolderURL else { return }
         checkAndRequestPermission(for: baseURL)
         let toProcess = fileList.filter { $0.isSelected && !$0.proposedName.isEmpty }
-        
         isProcessing = true; statusText = t("msg_processing"); progress = 0; undoHistory.removeAll()
         Task(priority: .userInitiated) {
             let fm = FileManager.default; let total = toProcess.count; var processed = 0
-            let access = baseURL.startAccessingSecurityScopedResource(); defer { if access { baseURL.stopAccessingSecurityScopedResource() } }
+            let access = baseURL.startAccessingSecurityScopedResource()
+            defer { if access { baseURL.stopAccessingSecurityScopedResource() } }
             for file in toProcess {
                 let ext = file.originalURL.pathExtension; let newName = file.proposedName; var destURL: URL
                 if createSubfolders {
                     do {
                         let folder: URL
                         if file.isTVShow {
-                            let regex = try! NSRegularExpression(pattern: #"^(.* \(\d{4}\)).*?(S\d{2})E(\d{2,3})$"#)
-                            if let match = regex.firstMatch(in: newName, range: NSRange(newName.startIndex..., in: newName)),
-                               let seriesRange = Range(match.range(at: 1), in: newName), let seasonRange = Range(match.range(at: 2), in: newName) {
-                                let series = String(newName[seriesRange]); let seasonNum = String(newName[seasonRange].dropFirst())
-                                var rootName = series
+                            // Pattern: "Title (Year) SxxEyy" oppure "Title (Year) SxxEyy" con tag tmdb
+                            let tvFolderRegex = try! NSRegularExpression(
+                                pattern: #"^(.+?)\s*(?:\{tmdb-\d+\}|\[tmdbid-\d+\])?\s+(S(\d{2})E\d{2,3})$"#)
+                            let titleOnlyRegex = try! NSRegularExpression(
+                                pattern: #"^(.+?)\s+(S(\d{2})E\d{2,3})$"#)
+                            let ns = NSRange(newName.startIndex..., in: newName)
+
+                            func extractTVFolders(_ pattern: NSRegularExpression) -> (series: String, seasonNum: String)? {
+                                guard let match = pattern.firstMatch(in: newName, range: ns),
+                                      let seriesRange = Range(match.range(at: 1), in: newName),
+                                      let seasonRange = Range(match.range(at: 3), in: newName) else { return nil }
+                                return (String(newName[seriesRange]).trimmingCharacters(in: .whitespaces),
+                                        String(newName[seasonRange]))
+                            }
+
+                            if let parsed = extractTVFolders(tvFolderRegex) ?? extractTVFolders(titleOnlyRegex) {
+                                var rootName = parsed.series
                                 if !file.tmdbID.isEmpty {
                                     if renameFormat == .plex { rootName += " {tmdb-\(file.tmdbID)}" }
                                     else if renameFormat == .jellyfin { rootName += " [tmdbid-\(file.tmdbID)]" }
                                 }
-                                let root = sanitizeFileName(rootName)
-                                folder = baseURL.appendingPathComponent(root).appendingPathComponent("Season \(seasonNum)", isDirectory: true)
-                            } else { folder = baseURL.appendingPathComponent(sanitizeFileName(newName)) }
-                        } else { folder = baseURL.appendingPathComponent(sanitizeFileName(newName)) }
+                                folder = baseURL
+                                    .appendingPathComponent(sanitizeFileName(rootName))
+                                    .appendingPathComponent("Season \(parsed.seasonNum)", isDirectory: true)
+                            } else {
+                                folder = baseURL.appendingPathComponent(sanitizeFileName(newName))
+                            }
+                        } else {
+                            folder = baseURL.appendingPathComponent(sanitizeFileName(newName))
+                        }
                         try fm.createDirectory(at: folder, withIntermediateDirectories: true)
                         destURL = folder.appendingPathComponent("\(newName).\(ext)")
-                    } catch { await MainActor.run { file.status = .erroreSpostamento }; processed += 1; continue }
-                } else { destURL = file.originalURL.deletingLastPathComponent().appendingPathComponent("\(newName).\(ext)") }
+                    } catch {
+                        await MainActor.run { file.status = .erroreSpostamento }
+                        processed += 1; continue
+                    }
+                } else {
+                    destURL = file.originalURL.deletingLastPathComponent().appendingPathComponent("\(newName).\(ext)")
+                }
                 do {
                     let historyItem = RenameHistoryItem(originalURL: file.originalURL, newURL: destURL, fileID: file.id)
                     try fm.moveItem(at: file.originalURL, to: destURL)
-                    await MainActor.run { file.status = .spostato; self.undoHistory.append(historyItem) }
-                } catch { await MainActor.run { file.status = .erroreSpostamento } }
-                processed += 1; await MainActor.run { progress = Double(processed) / Double(total) }
+                    await MainActor.run { file.status = .spostato; undoHistory.append(historyItem) }
+                } catch {
+                    await MainActor.run { file.status = .erroreSpostamento }
+                }
+                processed += 1
+                await MainActor.run { progress = Double(processed) / Double(total) }
             }
-            await MainActor.run { isProcessing = false; statusText = self.t("msg_done"); for f in toProcess where f.status == .spostato { f.isSelected = false } }
+            await MainActor.run {
+                isProcessing = false; statusText = t("msg_done")
+                for f in toProcess where f.status == .spostato { f.isSelected = false }
+            }
         }
     }
-    
+
     func undoLastOperation() {
         guard !undoHistory.isEmpty else { statusText = ""; return }
         statusText = t("msg_undoing"); let fm = FileManager.default; var restoredCount = 0
@@ -547,10 +726,10 @@ final class MediaOrganizerViewModel: ObservableObject {
         }
         undoHistory.removeAll(); statusText = "\(t("msg_undo_done")) \(restoredCount)."
     }
-    
-    func selectAll() { fileList.filter { [.pronto, .manuale].contains($0.status) }.forEach { $0.isSelected = true } }
+
+    func selectAll()   { fileList.filter { [.pronto, .manuale].contains($0.status) }.forEach { $0.isSelected = true } }
     func deselectAll() { fileList.forEach { $0.isSelected = false } }
-    
+
     func resolveAmbiguity(selected: DisambiguationCandidate) {
         guard let current = currentAmbiguity else { return }
         for idx in current.fileIndices { applyFromCandidate(selected, to: fileList[idx]) }
@@ -560,7 +739,7 @@ final class MediaOrganizerViewModel: ObservableObject {
             if currentAmbiguity == nil { pendingProcessAfterDisambiguation = false; requestProcessing() }
         } else { currentAmbiguity = ambiguousMatches.first }
     }
-    
+
     func checkForAmbiguities() {
         var matches: [AmbiguousMatch] = []
         for (i, file) in fileList.enumerated() {
@@ -577,47 +756,88 @@ final class MediaOrganizerViewModel: ObservableObject {
 struct ContentView: View {
     @StateObject private var vm = MediaOrganizerViewModel()
     @State private var isDropTargeted = false
-    
+
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                if vm.isScanning { ScanningView(vm: vm) }
-                else if vm.fileList.isEmpty {
-                    Text(vm.selectedFolderURL == nil ? vm.t("msg_ready") : vm.t("msg_no_files"))
-                        .font(.title2).foregroundColor(.secondary).frame(maxHeight: .infinity)
-                } else { FileListView(vm: vm) }
-                Divider(); HStack { Text(vm.statusText).font(.caption).lineLimit(1); Spacer() }.padding(8).background(.thinMaterial)
+            ZStack {
+                VStack(spacing: 0) {
+                    if vm.isScanning {
+                        ScanningView(vm: vm)
+                    } else if vm.fileList.isEmpty {
+                        DropPlaceholderView(isTargeted: isDropTargeted, message: vm.t("msg_ready"))
+                    } else {
+                        FileListView(vm: vm)
+                    }
+                    Divider()
+                    HStack {
+                        Text(vm.statusText).font(.caption).lineLimit(1)
+                        Spacer()
+                    }.padding(8).background(.thinMaterial)
+                }
+
+                // Overlay visuale quando si è sopra la drop zone
+                if isDropTargeted {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.accentColor, lineWidth: 3)
+                        .background(Color.accentColor.opacity(0.08).cornerRadius(12))
+                        .padding(6)
+                        .allowsHitTesting(false)
+                }
             }
             .navigationTitle(vm.t("app_title"))
             .toolbar {
                 ToolbarItemGroup(placement: .navigation) {
                     HStack {
                         Button {
-                            vm.selectedFolderURL = nil; let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false
+                            vm.selectedFolderURL = nil
+                            let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false
                             panel.begin { if $0 == .OK { vm.selectedFolderURL = panel.url; vm.scanFolder() } }
                         } label: { Label(vm.t("btn_open"), systemImage: "folder") }
                         .disabled(vm.isScanning).help(vm.t("tip_open"))
-                        if let url = vm.selectedFolderURL { Text(url.lastPathComponent).font(.caption).foregroundColor(.secondary).padding(.leading, 4) }
+
+                        if let url = vm.selectedFolderURL {
+                            Text(url.lastPathComponent).font(.caption).foregroundColor(.secondary).padding(.leading, 4)
+                        }
                     }
-                    Button { vm.scanFolder() } label: { Image(systemName: "magnifyingglass") }.disabled(vm.selectedFolderURL == nil || vm.isScanning).help(vm.t("tip_scan"))
-                    Button { vm.undoLastOperation() } label: { Image(systemName: "arrow.uturn.backward") }.disabled(vm.undoHistory.isEmpty || vm.isProcessing).help(vm.t("tip_undo"))
-                    Button { vm.resetAll() } label: { Image(systemName: "arrow.clockwise") }.disabled(vm.isScanning).help(vm.t("tip_reset"))
-                    Button { vm.selectAll() } label: { Image(systemName: "checklist") }.disabled(vm.fileList.isEmpty).help(vm.t("tip_sel_all"))
-                    Button { vm.deselectAll() } label: { Image(systemName: "checklist.unchecked") }.disabled(vm.fileList.isEmpty).help(vm.t("tip_desel_all"))
+                    Button { vm.scanFolder() } label: { Image(systemName: "magnifyingglass") }
+                        .disabled(vm.selectedFolderURL == nil || vm.isScanning).help(vm.t("tip_scan"))
+                    Button { vm.undoLastOperation() } label: { Image(systemName: "arrow.uturn.backward") }
+                        .disabled(vm.undoHistory.isEmpty || vm.isProcessing).help(vm.t("tip_undo"))
+                    Button { vm.resetAll() } label: { Image(systemName: "arrow.clockwise") }
+                        .disabled(vm.isScanning).help(vm.t("tip_reset"))
+                    Button { vm.selectAll() } label: { Image(systemName: "checklist") }
+                        .disabled(vm.fileList.isEmpty).help(vm.t("tip_sel_all"))
+                    Button { vm.deselectAll() } label: { Image(systemName: "checklist.unchecked") }
+                        .disabled(vm.fileList.isEmpty).help(vm.t("tip_desel_all"))
                 }
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button { vm.targetFileForManualSearch = nil; vm.isShowingRetryAlert = true } label: { Label(vm.t("btn_tmdb"), systemImage: "magnifyingglass.circle") }.disabled(vm.isScanning).help(vm.t("tip_tmdb"))
-                    Toggle(isOn: $vm.filterNonTrovati) { Image(systemName: "line.3.horizontal.decrease.circle") }.toggleStyle(.button).disabled(vm.fileList.isEmpty).help(vm.t("tip_filter"))
-                    Button { vm.requestProcessing() } label: { Label(vm.t("btn_process"), systemImage: "play.fill") }.disabled(vm.fileList.isEmpty || vm.isScanning || vm.isProcessing).help(vm.t("tip_process"))
-                    Button { vm.showSettingsSheet = true } label: { Label(vm.t("settings_title"), systemImage: "gearshape") }.help(vm.t("tip_settings")).keyboardShortcut(",", modifiers: .command)
+                    Button { vm.targetFileForManualSearch = nil; vm.isShowingRetryAlert = true } label: {
+                        Label(vm.t("btn_tmdb"), systemImage: "magnifyingglass.circle")
+                    }.disabled(vm.isScanning).help(vm.t("tip_tmdb"))
+
+                    Toggle(isOn: $vm.filterNonTrovati) { Image(systemName: "line.3.horizontal.decrease.circle") }
+                        .toggleStyle(.button).disabled(vm.fileList.isEmpty).help(vm.t("tip_filter"))
+
+                    Button { vm.requestProcessing() } label: { Label(vm.t("btn_process"), systemImage: "play.fill") }
+                        .disabled(vm.fileList.isEmpty || vm.isScanning || vm.isProcessing).help(vm.t("tip_process"))
+
+                    Button { vm.showSettingsSheet = true } label: { Label(vm.t("settings_title"), systemImage: "gearshape") }
+                        .help(vm.t("tip_settings")).keyboardShortcut(",", modifiers: .command)
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("OpenSettings"))) { _ in vm.showSettingsSheet = true }
-            .onDrop(of: [UTType.fileURL.identifier], isTargeted: $isDropTargeted) { providers in
-                let group = DispatchGroup(); var collected: [URL] = []
-                for provider in providers { group.enter(); provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) { collected.append(url) } else if let url = item as? URL { collected.append(url) }; group.leave() } }
-                group.notify(queue: .main) { if !collected.isEmpty { vm.addDroppedFiles(urls: collected) } }; return true
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("OpenSettings"))) { _ in
+                vm.showSettingsSheet = true
             }
+            // ── Drop zone ──────────────────────────────────────────────────────
+            // Accetta fileURL e folder; usa onDrop con UTType per macOS 14+
+            .onDrop(
+                of: [UTType.fileURL, UTType.folder],
+                isTargeted: $isDropTargeted
+            ) { providers in
+                vm.handleDrop(providers: providers)
+                return true
+            }
+            // ──────────────────────────────────────────────────────────────────
             .sheet(isPresented: $vm.showSettingsSheet) { SettingsSheetView(vm: vm) }
             .alert(vm.t("alert_manual_title"), isPresented: $vm.isShowingRetryAlert) {
                 TextField("...", text: $vm.retrySearchName)
@@ -628,10 +848,38 @@ struct ContentView: View {
                 Button(vm.t("sheet_cancel"), role: .cancel) { }
                 Button(vm.t("btn_process")) { vm.executeProcessing() }
             } message: { Text(vm.t("alert_confirm_msg")) }
-            .sheet(item: $vm.currentAmbiguity) { amb in DisambiguationSheetView(ambiguity: amb, onSelect: { vm.resolveAmbiguity(selected: $0) }).environmentObject(vm) }
+            .sheet(item: $vm.currentAmbiguity) { amb in
+                DisambiguationSheetView(ambiguity: amb, onSelect: { vm.resolveAmbiguity(selected: $0) })
+                    .environmentObject(vm)
+            }
         }
+        // Applica il tema selezionato
+        .preferredColorScheme(vm.appTheme.colorScheme)
     }
 }
+
+// MARK: - Drop Placeholder
+
+struct DropPlaceholderView: View {
+    let isTargeted: Bool
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: isTargeted ? "tray.and.arrow.down.fill" : "tray")
+                .font(.system(size: 48))
+                .foregroundColor(isTargeted ? .accentColor : .secondary)
+                .animation(.easeInOut(duration: 0.15), value: isTargeted)
+            Text(message)
+                .font(.title2)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - Scanning / FileList / FileRow
 
 struct ScanningView: View {
     @ObservedObject var vm: MediaOrganizerViewModel
@@ -672,6 +920,7 @@ struct FileRowView: View {
     @ObservedObject var file: MediaFile
     @EnvironmentObject var vm: MediaOrganizerViewModel
     var onManualSearch: () -> Void
+
     var body: some View {
         HStack {
             Toggle("", isOn: $file.isSelected).toggleStyle(.checkbox).frame(width: 30)
@@ -687,6 +936,7 @@ struct FileRowView: View {
             }.frame(width: 140, alignment: .leading)
         }.padding(.vertical, 4)
     }
+
     private func color(for s: FileStatus) -> Color {
         switch s {
         case .ambiguo: return .orange
@@ -696,10 +946,12 @@ struct FileRowView: View {
     }
 }
 
+// MARK: - Theme Selection
+
 struct ThemeSelectionView: View {
     @Binding var selectedTheme: AppTheme
     var language: AppLanguage
-    
+
     var body: some View {
         HStack(spacing: 20) {
             ThemeOptionView(title: AppTheme.system.label(for: language), isSelected: selectedTheme == .system) {
@@ -707,29 +959,25 @@ struct ThemeSelectionView: View {
                     ThemePreviewIcon(mode: .light).frame(width: 30).environment(\.colorScheme, .light)
                     ThemePreviewIcon(mode: .dark).frame(width: 30).environment(\.colorScheme, .dark)
                 }
-            }
-            .onTapGesture { selectedTheme = .system }
+            }.onTapGesture { selectedTheme = .system }
+
             ThemeOptionView(title: AppTheme.light.label(for: language), isSelected: selectedTheme == .light) {
                 ThemePreviewIcon(mode: .light).frame(width: 60).environment(\.colorScheme, .light)
-            }
-            .onTapGesture { selectedTheme = .light }
+            }.onTapGesture { selectedTheme = .light }
+
             ThemeOptionView(title: AppTheme.dark.label(for: language), isSelected: selectedTheme == .dark) {
                 ThemePreviewIcon(mode: .dark).frame(width: 60).environment(\.colorScheme, .dark)
-            }
-            .onTapGesture { selectedTheme = .dark }
+            }.onTapGesture { selectedTheme = .dark }
         }
     }
 }
 
 struct ThemeOptionView<Content: View>: View {
-    let title: String
-    let isSelected: Bool
-    let content: () -> Content
+    let title: String; let isSelected: Bool; let content: () -> Content
     var body: some View {
         VStack(spacing: 8) {
             content()
-                .frame(height: 45)
-                .cornerRadius(6)
+                .frame(height: 45).cornerRadius(6)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(isSelected ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: isSelected ? 3 : 1))
                 .shadow(radius: 1)
             Text(title).font(.caption).foregroundColor(isSelected ? .primary : .secondary)
@@ -741,7 +989,7 @@ struct ThemePreviewIcon: View {
     enum Mode { case light, dark }
     let mode: Mode
     var body: some View {
-        GeometryReader { geo in
+        GeometryReader { _ in
             ZStack(alignment: .topLeading) {
                 Rectangle().fill(mode == .light ? Color(nsColor: .windowBackgroundColor) : Color.black.opacity(0.8))
                 Rectangle().fill(mode == .light ? Color.gray.opacity(0.2) : Color.white.opacity(0.1)).frame(height: 10)
@@ -755,9 +1003,12 @@ struct ThemePreviewIcon: View {
     }
 }
 
+// MARK: - Settings Sheet
+
 struct SettingsSheetView: View {
     @ObservedObject var vm: MediaOrganizerViewModel
     @Environment(\.dismiss) var dismiss
+
     var body: some View {
         VStack {
             Text(vm.t("settings_title")).font(.title2).padding()
@@ -786,11 +1037,14 @@ struct SettingsSheetView: View {
     }
 }
 
+// MARK: - Disambiguation Sheet
+
 struct DisambiguationSheetView: View {
     let ambiguity: AmbiguousMatch
     let onSelect: (DisambiguationCandidate) -> Void
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var vm: MediaOrganizerViewModel
+
     var body: some View {
         VStack {
             Text(vm.t("sheet_title")).font(.title2).padding(.top)
@@ -805,7 +1059,10 @@ struct DisambiguationSheetView: View {
                 Button(action: { onSelect(cand) }) {
                     HStack {
                         Text(cand.title).bold(); Spacer()
-                        VStack(alignment: .trailing) { Text(cand.year).font(.body); if !cand.date.isEmpty { Text(cand.date).font(.caption).foregroundColor(.secondary) } }
+                        VStack(alignment: .trailing) {
+                            Text(cand.year).font(.body)
+                            if !cand.date.isEmpty { Text(cand.date).font(.caption).foregroundColor(.secondary) }
+                        }
                     }
                 }
             }
